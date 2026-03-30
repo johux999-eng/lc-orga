@@ -1,26 +1,16 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from './Sidebar'
-import type { Profile } from '@/lib/types'
+import { getAuthUser, getCurrentProfile } from '@/lib/auth'
 
 interface Props {
   children: React.ReactNode
 }
 
 export async function AppShell({ children }: Props) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const user = await getAuthUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single<Profile>()
-
+  const profile = await getCurrentProfile()
   if (!profile) redirect('/onboarding')
 
   return (

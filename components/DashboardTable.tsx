@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Search } from 'lucide-react'
 import type { UserStats } from '@/lib/types'
 import { TEAM_LABELS, ROLE_LABELS, getRateColor, getRateBarColor } from '@/lib/utils'
@@ -13,10 +13,14 @@ interface Props {
 export function DashboardTable({ stats, currentUserId }: Props) {
   const [search, setSearch] = useState('')
 
-  const filtered = stats.filter(
-    (s) =>
-      s.profile.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      (s.profile.team && TEAM_LABELS[s.profile.team].toLowerCase().includes(search.toLowerCase()))
+  const filtered = useMemo(
+    () =>
+      stats.filter(
+        (s) =>
+          s.profile.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+          (s.profile.team && TEAM_LABELS[s.profile.team].toLowerCase().includes(search.toLowerCase()))
+      ),
+    [stats, search]
   )
 
   return (
