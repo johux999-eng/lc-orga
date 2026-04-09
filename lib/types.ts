@@ -24,6 +24,8 @@ export interface Task {
   title: string
   description: string | null
   assigned_to: string | null
+  co_assignees: string[]
+  assigned_group: string | null
   created_by: string | null
   team: Team | null
   status: TaskStatus

@@ -31,6 +31,65 @@ export const TEAMS: Team[] = [
 
 export const ROLES: Role[] = ['chair', 'head', 'member']
 
+export const ASSIGNEE_GROUPS: string[] = [
+  'heads_sponsoring',
+  'heads_speaker',
+  'heads_pr',
+  'heads_technik',
+  'heads_event',
+  'heads_all',
+  'members_sponsoring',
+  'members_speaker',
+  'members_pr',
+  'members_technik',
+  'members_event',
+  'members_all',
+  'all',
+]
+
+export const GROUP_LABELS: Record<string, string> = {
+  heads_sponsoring: 'Heads Sponsoring',
+  heads_speaker: 'Heads Speaker',
+  heads_pr: 'Heads Public Relations',
+  heads_technik: 'Heads Technik/Mobility',
+  heads_event: 'Heads Event',
+  heads_all: 'Alle Heads',
+  members_sponsoring: 'Members Sponsoring',
+  members_speaker: 'Members Speaker',
+  members_pr: 'Members Public Relations',
+  members_technik: 'Members Technik/Mobility',
+  members_event: 'Members Event',
+  members_all: 'Alle Members',
+  all: 'Alle',
+}
+
+const GROUP_CRITERIA: Record<string, { role?: Role; team?: Team }> = {
+  heads_sponsoring: { role: 'head', team: 'Sponsoring' },
+  heads_speaker: { role: 'head', team: 'Speaker' },
+  heads_pr: { role: 'head', team: 'Public Relations' },
+  heads_technik: { role: 'head', team: 'Technik/Mobility' },
+  heads_event: { role: 'head', team: 'Event' },
+  heads_all: { role: 'head' },
+  members_sponsoring: { role: 'member', team: 'Sponsoring' },
+  members_speaker: { role: 'member', team: 'Speaker' },
+  members_pr: { role: 'member', team: 'Public Relations' },
+  members_technik: { role: 'member', team: 'Technik/Mobility' },
+  members_event: { role: 'member', team: 'Event' },
+  members_all: { role: 'member' },
+  all: {},
+}
+
+export function isProfileInGroup(
+  group: string,
+  profile: { role: Role | null; team: Team | null }
+): boolean {
+  const criteria = GROUP_CRITERIA[group]
+  if (!criteria) return false
+  if (criteria.role && profile.role !== criteria.role) return false
+  if (criteria.team && profile.team !== criteria.team) return false
+  return true
+}
+
 export function isOverdue(task: Pick<Task, 'status' | 'deadline'>): boolean {
   if (task.status !== 'open') return false
   if (!task.deadline) return false
@@ -84,7 +143,9 @@ export function getInitials(name: string | null): string {
 
 export function computeStats(profiles: Profile[], tasks: Task[]): UserStats[] {
   return profiles.map((profile) => {
-    const profileTasks = tasks.filter((t) => t.assigned_to === profile.id)
+    const profileTasks = tasks.filter(
+      (t) => t.assigned_to === profile.id || (t.co_assignees ?? []).includes(profile.id)
+    )
     const open = profileTasks.filter((t) => t.status === 'open').length
     const overdue = profileTasks.filter((t) => isOverdue(t)).length
     const pending = profileTasks.filter((t) => t.status === 'pending_review').length

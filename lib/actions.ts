@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Role, Team } from '@/lib/types'
+import { isProfileInGroup } from '@/lib/utils'
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -71,18 +72,34 @@ export async function createTask(formData: FormData) {
 
   const title = (formData.get('title') as string).trim()
   const description = (formData.get('description') as string | null)?.trim() || null
-  const assigned_to = formData.get('assigned_to') as string
   const team = formData.get('team') as Team
   const deadline = (formData.get('deadline') as string | null) || null
+  const assign_mode = (formData.get('assign_mode') as string) || 'persons'
 
-  if (!title || !assigned_to || !team || !deadline) {
-    throw new Error('Titel, Zuweisung, Team und Deadline sind erforderlich')
+  if (!title || !team || !deadline) {
+    throw new Error('Titel, Team und Deadline sind erforderlich')
+  }
+
+  let assigned_to: string | null = null
+  let co_assignees: string[] = []
+  let assigned_group: string | null = null
+
+  if (assign_mode === 'group') {
+    assigned_group = (formData.get('assigned_group') as string | null)?.trim() || null
+    if (!assigned_group) throw new Error('Gruppe ist erforderlich')
+  } else {
+    const assignees = (formData.getAll('assigned_to') as string[]).filter(Boolean)
+    if (!assignees.length) throw new Error('Zuweisung ist erforderlich')
+    assigned_to = assignees[0]
+    co_assignees = assignees.slice(1)
   }
 
   const { error } = await supabase.from('tasks').insert({
     title,
     description,
     assigned_to,
+    co_assignees,
+    assigned_group,
     team,
     deadline,
     created_by: user.id,
@@ -101,18 +118,31 @@ export async function submitTask(taskId: string, proofUrl?: string) {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('Nicht authentifiziert')
 
-  // Fetch the task to determine assignee role
-  const { data: task } = await supabase
-    .from('tasks')
-    .select('assigned_to, assigned_profile:profiles!assigned_to(role)')
-    .eq('id', taskId)
-    .single()
+  const [{ data: task }, { data: submitterProfile }] = await Promise.all([
+    supabase
+      .from('tasks')
+      .select('assigned_to, co_assignees, assigned_group')
+      .eq('id', taskId)
+      .single(),
+    supabase
+      .from('profiles')
+      .select('role, team')
+      .eq('id', user.id)
+      .single(),
+  ])
 
   if (!task) throw new Error('Task nicht gefunden')
-  if (task.assigned_to !== user.id) throw new Error('Nicht berechtigt')
+  if (!submitterProfile) throw new Error('Profil nicht gefunden')
 
-  // Chairs go directly to done, others to pending_review
-  const assigneeRole = (task.assigned_profile as unknown as { role: string } | null)?.role
+  const coAssignees = (task.co_assignees as string[]) ?? []
+  const isAssigned =
+    task.assigned_to === user.id ||
+    coAssignees.includes(user.id) ||
+    (task.assigned_group ? isProfileInGroup(task.assigned_group, submitterProfile) : false)
+
+  if (!isAssigned) throw new Error('Nicht berechtigt')
+
+  const assigneeRole = submitterProfile.role
   const newStatus = assigneeRole === 'chair' ? 'done' : 'pending_review'
   const now = new Date().toISOString()
 
@@ -125,7 +155,6 @@ export async function submitTask(taskId: string, proofUrl?: string) {
       ...(newStatus === 'done' ? { reviewed_by: user.id, completed_at: now } : {}),
     })
     .eq('id', taskId)
-    .eq('assigned_to', user.id)
 
   if (error) throw new Error(error.message)
 
@@ -307,7 +336,7 @@ export async function deleteTask(taskId: string) {
   revalidatePath('/')
 }
 
-export async function reassignTask(taskId: string, newAssignedTo: string) {
+export async function reassignTask(taskId: string, assignees: string[], group: string | null) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -322,9 +351,13 @@ export async function reassignTask(taskId: string, newAssignedTo: string) {
 
   if (!actor || actor.role !== 'chair') throw new Error('Nur Chairs können Tasks neu zuweisen')
 
+  const assigned_to = group ? null : (assignees[0] ?? null)
+  const co_assignees = group ? [] : assignees.slice(1)
+  const assigned_group = group || null
+
   const { error } = await supabase
     .from('tasks')
-    .update({ assigned_to: newAssignedTo })
+    .update({ assigned_to, co_assignees, assigned_group })
     .eq('id', taskId)
 
   if (error) throw new Error(error.message)

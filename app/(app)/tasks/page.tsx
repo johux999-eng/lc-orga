@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAuthUser, getCurrentProfile } from '@/lib/auth'
 import { TasksView } from '@/components/TasksView'
 import type { Profile, Task } from '@/lib/types'
+import { ASSIGNEE_GROUPS, isProfileInGroup } from '@/lib/utils'
 import { CheckSquare } from 'lucide-react'
 
 export const revalidate = 0
@@ -29,7 +30,13 @@ export default async function TasksPage() {
     .order('created_at', { ascending: false })
 
   if (currentProfile.role === 'member') {
-    tasksQuery = tasksQuery.eq('assigned_to', user.id)
+    const matchingGroups = ASSIGNEE_GROUPS.filter((g) => isProfileInGroup(g, currentProfile))
+    const orParts = [
+      `assigned_to.eq.${user.id}`,
+      `co_assignees.cs.{${user.id}}`,
+      ...(matchingGroups.length > 0 ? [`assigned_group.in.(${matchingGroups.join(',')})`] : []),
+    ]
+    tasksQuery = tasksQuery.or(orParts.join(','))
   } else if (currentProfile.role === 'head') {
     tasksQuery = tasksQuery.eq('team', currentProfile.team)
   }

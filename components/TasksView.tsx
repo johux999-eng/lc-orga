@@ -8,6 +8,9 @@ import {
   ROLE_LABELS,
   STATUS_LABELS,
   TEAMS,
+  ASSIGNEE_GROUPS,
+  GROUP_LABELS,
+  isProfileInGroup,
   formatDate,
 } from '@/lib/utils'
 import { StatusBadge } from './StatusBadge'
@@ -159,14 +162,37 @@ function ReassignModal({
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [selectedId, setSelectedId] = useState(task.assigned_to ?? '')
+  const [assignMode, setAssignMode] = useState<'persons' | 'group'>(
+    task.assigned_group ? 'group' : 'persons'
+  )
+  const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>(
+    task.assigned_to ? [task.assigned_to, ...(task.co_assignees ?? [])] : (task.co_assignees ?? [])
+  )
+  const [selectedGroup, setSelectedGroup] = useState(task.assigned_group ?? '')
+
+  function togglePerson(id: string) {
+    setSelectedPersonIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
 
   function handleReassign() {
-    if (!selectedId) return
+    if (assignMode === 'persons' && selectedPersonIds.length === 0) {
+      setError('Bitte mindestens eine Person auswählen')
+      return
+    }
+    if (assignMode === 'group' && !selectedGroup) {
+      setError('Bitte eine Gruppe auswählen')
+      return
+    }
     setError(null)
     startTransition(async () => {
       try {
-        await reassignTask(task.id, selectedId)
+        await reassignTask(
+          task.id,
+          assignMode === 'persons' ? selectedPersonIds : [],
+          assignMode === 'group' ? selectedGroup : null
+        )
         onClose()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Fehler beim Zuweisen')
@@ -188,19 +214,57 @@ function ReassignModal({
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Zuweisen an *</label>
-            <select
-              value={selectedId}
-              onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
-            >
-              <option value="">— Person wählen —</option>
-              {profiles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name} ({p.role ? ROLE_LABELS[p.role] : '?'}
-                  {p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-1 mb-2 p-0.5 bg-slate-800 rounded-lg border border-slate-700">
+              <button
+                type="button"
+                onClick={() => setAssignMode('persons')}
+                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
+                  assignMode === 'persons' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Person(en)
+              </button>
+              <button
+                type="button"
+                onClick={() => setAssignMode('group')}
+                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
+                  assignMode === 'group' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Gruppe
+              </button>
+            </div>
+            {assignMode === 'persons' ? (
+              <div className="max-h-48 overflow-y-auto border border-slate-700 rounded-lg divide-y divide-slate-800">
+                {profiles.map((p) => (
+                  <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/70 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedPersonIds.includes(p.id)}
+                      onChange={() => togglePerson(p.id)}
+                      className="accent-blue-500"
+                    />
+                    <span className="text-sm text-slate-200">
+                      {p.full_name}
+                      <span className="text-xs text-slate-500 ml-1">
+                        ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <select
+                value={selectedGroup}
+                onChange={(e) => setSelectedGroup(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
+              >
+                <option value="">— Gruppe wählen —</option>
+                {ASSIGNEE_GROUPS.map((g) => (
+                  <option key={g} value={g}>{GROUP_LABELS[g]}</option>
+                ))}
+              </select>
+            )}
           </div>
           {error && (
             <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{error}</p>
@@ -209,7 +273,11 @@ function ReassignModal({
             <button onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 border border-slate-700 hover:bg-slate-800 transition-colors">
               Abbrechen
             </button>
-            <button onClick={handleReassign} disabled={isPending || !selectedId} className="flex-1 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 transition-colors">
+            <button
+              onClick={handleReassign}
+              disabled={isPending}
+              className="flex-1 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 transition-colors"
+            >
               {isPending ? 'Zuweisen…' : 'Zuweisen'}
             </button>
           </div>
@@ -235,9 +303,18 @@ function CreateTaskModal({
   const [selectedTeam, setSelectedTeam] = useState<Team | ''>(
     currentProfile.role === 'head' ? (currentProfile.team ?? '') : ''
   )
+  const [assignMode, setAssignMode] = useState<'persons' | 'group'>('persons')
 
   const assignableProfiles = profiles.filter((p) => {
     if (currentProfile.role === 'head') return p.team === currentProfile.team
+    return true
+  })
+
+  // Heads can only assign groups that contain members of their own team
+  const availableGroups = ASSIGNEE_GROUPS.filter((g) => {
+    if (currentProfile.role === 'head') {
+      return isProfileInGroup(g, { role: 'member', team: currentProfile.team })
+    }
     return true
   })
 
@@ -245,6 +322,18 @@ function CreateTaskModal({
     e.preventDefault()
     setError(null)
     const formData = new FormData(e.currentTarget)
+    if (assignMode === 'persons') {
+      const assignees = formData.getAll('assigned_to')
+      if (!assignees.length) {
+        setError('Bitte mindestens eine Person auswählen')
+        return
+      }
+    } else {
+      if (!formData.get('assigned_group')) {
+        setError('Bitte eine Gruppe auswählen')
+        return
+      }
+    }
     startTransition(async () => {
       try {
         await createTask(formData)
@@ -323,19 +412,57 @@ function CreateTaskModal({
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Zuweisen an *</label>
-            <select
-              name="assigned_to"
-              required
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
-            >
-              <option value="">— Person wählen —</option>
-              {assignableProfiles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name} ({p.role ? ROLE_LABELS[p.role] : '?'}
-                  {p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-1 mb-2 p-0.5 bg-slate-800 rounded-lg border border-slate-700">
+              <button
+                type="button"
+                onClick={() => setAssignMode('persons')}
+                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
+                  assignMode === 'persons' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Person(en)
+              </button>
+              <button
+                type="button"
+                onClick={() => setAssignMode('group')}
+                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
+                  assignMode === 'group' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Gruppe
+              </button>
+            </div>
+            <input type="hidden" name="assign_mode" value={assignMode} />
+            {assignMode === 'persons' ? (
+              <div className="max-h-48 overflow-y-auto border border-slate-700 rounded-lg divide-y divide-slate-800">
+                {assignableProfiles.map((p) => (
+                  <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/70 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="assigned_to"
+                      value={p.id}
+                      className="accent-blue-500"
+                    />
+                    <span className="text-sm text-slate-200">
+                      {p.full_name}
+                      <span className="text-xs text-slate-500 ml-1">
+                        ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <select
+                name="assigned_group"
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
+              >
+                <option value="">— Gruppe wählen —</option>
+                {availableGroups.map((g) => (
+                  <option key={g} value={g}>{GROUP_LABELS[g]}</option>
+                ))}
+              </select>
+            )}
           </div>
           {error && (
             <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
@@ -463,14 +590,22 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
   const isChair = currentProfile.role === 'chair'
 
   const filtered = tasks.filter((t) => {
-    if (filterMine && t.assigned_to !== currentProfile.id) return false
+    if (filterMine) {
+      const isAssignedToMe =
+        t.assigned_to === currentProfile.id ||
+        (t.co_assignees ?? []).includes(currentProfile.id) ||
+        (t.assigned_group ? isProfileInGroup(t.assigned_group, currentProfile) : false)
+      if (!isAssignedToMe) return false
+    }
     if (filterStatus !== 'all' && t.status !== filterStatus) return false
     if (filterTeam !== 'all' && t.team !== filterTeam) return false
     if (search) {
       const q = search.toLowerCase()
+      const groupLabel = t.assigned_group ? (GROUP_LABELS[t.assigned_group] ?? t.assigned_group) : ''
       if (
         !t.title.toLowerCase().includes(q) &&
-        !t.assigned_profile?.full_name?.toLowerCase().includes(q)
+        !t.assigned_profile?.full_name?.toLowerCase().includes(q) &&
+        !groupLabel.toLowerCase().includes(q)
       )
         return false
     }
@@ -659,7 +794,11 @@ function TaskTableRow({
   const [actionId, setActionId] = useState<'approve' | 'reject' | null>(null)
 
   const isChair = currentProfile.role === 'chair'
-  const canSubmit = task.assigned_to === currentProfile.id && task.status === 'open'
+  const isAssignedToMe =
+    task.assigned_to === currentProfile.id ||
+    (task.co_assignees ?? []).includes(currentProfile.id) ||
+    (task.assigned_group ? isProfileInGroup(task.assigned_group, currentProfile) : false)
+  const canSubmit = isAssignedToMe && task.status === 'open'
   const canReview =
     task.status === 'pending_review' &&
     (isChair ||
@@ -697,14 +836,21 @@ function TaskTableRow({
         </div>
       </td>
       <td className="px-4 py-3">
-        <div>
-          <span className="text-slate-300">{task.assigned_profile?.full_name ?? '—'}</span>
-          {task.assigned_profile?.role && (
-            <span className="ml-1 text-xs text-slate-600">
-              {ROLE_LABELS[task.assigned_profile.role]}
-            </span>
-          )}
-        </div>
+        {task.assigned_group ? (
+          <span className="text-slate-300">{GROUP_LABELS[task.assigned_group] ?? task.assigned_group}</span>
+        ) : (
+          <div>
+            <span className="text-slate-300">{task.assigned_profile?.full_name ?? '—'}</span>
+            {(task.co_assignees ?? []).length > 0 && (
+              <span className="ml-1 text-xs text-slate-500">+{task.co_assignees.length}</span>
+            )}
+            {task.assigned_profile?.role && (
+              <span className="ml-1 text-xs text-slate-600">
+                {ROLE_LABELS[task.assigned_profile.role]}
+              </span>
+            )}
+          </div>
+        )}
       </td>
       <td className="px-4 py-3 text-slate-400">{formatDate(task.deadline)}</td>
       <td className="px-4 py-3">
@@ -789,7 +935,11 @@ function TaskCard({
   const [isPending, startTransition] = useTransition()
 
   const isChair = currentProfile.role === 'chair'
-  const canSubmit = task.assigned_to === currentProfile.id && task.status === 'open'
+  const isAssignedToMe =
+    task.assigned_to === currentProfile.id ||
+    (task.co_assignees ?? []).includes(currentProfile.id) ||
+    (task.assigned_group ? isProfileInGroup(task.assigned_group, currentProfile) : false)
+  const canSubmit = isAssignedToMe && task.status === 'open'
   const canReview =
     task.status === 'pending_review' &&
     (isChair ||
@@ -825,7 +975,13 @@ function TaskCard({
       </div>
       <div className="flex items-center justify-between text-xs">
         <span className="text-slate-500">
-          {task.assigned_profile?.full_name ?? '—'} · {formatDate(task.deadline)}
+          {task.assigned_group
+            ? GROUP_LABELS[task.assigned_group] ?? task.assigned_group
+            : task.assigned_profile?.full_name ?? '—'}
+          {!task.assigned_group && (task.co_assignees ?? []).length > 0 && (
+            <span className="ml-0.5">+{task.co_assignees.length}</span>
+          )}
+          {' · '}{formatDate(task.deadline)}
         </span>
         <div className="flex items-center gap-1.5">
           {canSubmit && (

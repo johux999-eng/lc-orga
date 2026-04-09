@@ -6,11 +6,13 @@ import type { Task } from '@/lib/types'
 import {
   ROLE_LABELS,
   TEAM_LABELS,
+  ASSIGNEE_GROUPS,
   getInitials,
   formatDate,
   computeStats,
   getRateColor,
   getRateBarColor,
+  isProfileInGroup,
 } from '@/lib/utils'
 import { User } from 'lucide-react'
 
@@ -37,7 +39,13 @@ export default async function MePage() {
     .order('created_at', { ascending: false })
 
   if (currentProfile.role === 'member') {
-    tasksQuery = tasksQuery.eq('assigned_to', user.id)
+    const matchingGroups = ASSIGNEE_GROUPS.filter((g) => isProfileInGroup(g, currentProfile))
+    const orParts = [
+      `assigned_to.eq.${user.id}`,
+      `co_assignees.cs.{${user.id}}`,
+      ...(matchingGroups.length > 0 ? [`assigned_group.in.(${matchingGroups.join(',')})`] : []),
+    ]
+    tasksQuery = tasksQuery.or(orParts.join(','))
   } else if (currentProfile.role === 'head') {
     tasksQuery = tasksQuery.eq('team', currentProfile.team)
   }
