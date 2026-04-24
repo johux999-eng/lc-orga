@@ -804,7 +804,10 @@ function TaskTableRow({
     (isChair ||
       (currentProfile.role === 'head' &&
         task.team === currentProfile.team &&
-        task.assigned_profile?.role === 'member'))
+        (task.assigned_profile?.role === 'member' ||
+          (task.assigned_group
+            ? isProfileInGroup(task.assigned_group, { role: 'member', team: currentProfile.team })
+            : false))))
 
   function handleApprove() {
     setActionId('approve')
@@ -945,7 +948,10 @@ function TaskCard({
     (isChair ||
       (currentProfile.role === 'head' &&
         task.team === currentProfile.team &&
-        task.assigned_profile?.role === 'member'))
+        (task.assigned_profile?.role === 'member' ||
+          (task.assigned_group
+            ? isProfileInGroup(task.assigned_group, { role: 'member', team: currentProfile.team })
+            : false))))
 
   function handleApprove() {
     startTransition(async () => {

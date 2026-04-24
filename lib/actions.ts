@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Role, Team } from '@/lib/types'
-import { isProfileInGroup } from '@/lib/utils'
+import { isProfileInGroup } from './utils'
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -184,7 +184,7 @@ export async function approveTask(taskId: string) {
   // Fetch task + assignee info
   const { data: task } = await supabase
     .from('tasks')
-    .select('id, assigned_profile:profiles!assigned_to(role, team)')
+    .select('id, assigned_group, assigned_profile:profiles!assigned_to(role, team)')
     .eq('id', taskId)
     .eq('status', 'pending_review')
     .single()
@@ -192,15 +192,22 @@ export async function approveTask(taskId: string) {
   if (!task) throw new Error('Task nicht gefunden oder nicht zur Prüfung')
 
   const assignee = task.assigned_profile as unknown as { role: string; team: string } | null
-  if (!assignee) throw new Error('Kein Assignee gefunden')
 
   // Validate approval rights
   if (approver.role === 'head') {
-    if (assignee.role !== 'member' || assignee.team !== approver.team) {
-      throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
+    if (assignee) {
+      if (assignee.role !== 'member' || assignee.team !== approver.team) {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
+      }
+    } else if (task.assigned_group) {
+      if (!isProfileInGroup(task.assigned_group, { role: 'member', team: approver.team })) {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
+      }
+    } else {
+      throw new Error('Kein Assignee gefunden')
     }
   }
-  // Chair can approve any head task (role=head) — RLS handles visibility
+  // Chair can approve any pending task — RLS handles visibility
 
   const { error } = await supabase
     .from('tasks')

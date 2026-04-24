@@ -4,6 +4,7 @@ import { getAuthUser, getCurrentProfile } from '@/lib/auth'
 import { ReviewView } from '@/components/ReviewView'
 import type { Task } from '@/lib/types'
 import { ClipboardList } from 'lucide-react'
+import { isProfileInGroup } from '@/lib/utils'
 
 export const revalidate = 0
 
@@ -33,12 +34,23 @@ export default async function ReviewPage() {
 
   const tasks = ((allPending ?? []) as Task[]).filter((task) => {
     const assignee = task.assigned_profile
-    if (!assignee) return false
     if (currentProfile.role === 'head') {
-      return assignee.role === 'member' && assignee.team === currentProfile.team
+      if (assignee) {
+        return assignee.role === 'member' && assignee.team === currentProfile.team
+      }
+      if (task.assigned_group) {
+        return isProfileInGroup(task.assigned_group, { role: 'member', team: currentProfile.team })
+      }
+      return false
     }
     if (currentProfile.role === 'chair') {
-      return assignee.role === 'head'
+      if (assignee) {
+        return assignee.role === 'head'
+      }
+      if (task.assigned_group) {
+        return task.assigned_group.startsWith('heads_')
+      }
+      return false
     }
     return false
   })
