@@ -152,6 +152,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
       status: newStatus,
       proof_url: proofUrl || null,
       submitted_at: now,
+      submitted_by: user.id,
       ...(newStatus === 'done' ? { reviewed_by: user.id, completed_at: now } : {}),
     })
     .eq('id', taskId)

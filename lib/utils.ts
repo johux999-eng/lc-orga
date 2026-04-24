@@ -90,6 +90,25 @@ export function isProfileInGroup(
   return true
 }
 
+function isHeadGroup(group: string): boolean {
+  return group.startsWith('heads_')
+}
+
+export function isTaskVisibleForProfile(
+  task: Pick<Task, 'assigned_to' | 'co_assignees' | 'assigned_group' | 'status' | 'submitted_by'>,
+  profile: { id: string; role: Role | null; team: Team | null }
+): boolean {
+  if (task.assigned_to === profile.id || (task.co_assignees ?? []).includes(profile.id)) {
+    return true
+  }
+  if (!task.assigned_group) return false
+  if (!isProfileInGroup(task.assigned_group, profile)) return false
+  if (task.status === 'open') return true
+  // pending_review / done group tasks
+  if (isHeadGroup(task.assigned_group)) return true
+  return task.submitted_by === profile.id
+}
+
 export function isOverdue(task: Pick<Task, 'status' | 'deadline'>): boolean {
   if (task.status !== 'open') return false
   if (!task.deadline) return false
@@ -143,9 +162,7 @@ export function getInitials(name: string | null): string {
 
 export function computeStats(profiles: Profile[], tasks: Task[]): UserStats[] {
   return profiles.map((profile) => {
-    const profileTasks = tasks.filter(
-      (t) => t.assigned_to === profile.id || (t.co_assignees ?? []).includes(profile.id)
-    )
+    const profileTasks = tasks.filter((t) => isTaskVisibleForProfile(t, profile))
     const open = profileTasks.filter((t) => t.status === 'open').length
     const overdue = profileTasks.filter((t) => isOverdue(t)).length
     const pending = profileTasks.filter((t) => t.status === 'pending_review').length

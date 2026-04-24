@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       .order('full_name'),
     supabase
       .from('tasks')
-      .select('id, assigned_to, status, deadline'),
+      .select('id, assigned_to, co_assignees, assigned_group, status, deadline, submitted_by'),
   ])
 
   const allProfiles = (profilesResult.data ?? []) as Profile[]

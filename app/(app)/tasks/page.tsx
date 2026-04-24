@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAuthUser, getCurrentProfile } from '@/lib/auth'
 import { TasksView } from '@/components/TasksView'
 import type { Profile, Task } from '@/lib/types'
-import { ASSIGNEE_GROUPS, isProfileInGroup } from '@/lib/utils'
+import { ASSIGNEE_GROUPS, isProfileInGroup, isTaskVisibleForProfile } from '@/lib/utils'
 import { CheckSquare } from 'lucide-react'
 
 export const revalidate = 0
@@ -50,6 +50,12 @@ export default async function TasksPage() {
       .order('full_name'),
   ])
 
+  const rawTasks = (tasksResult.data ?? []) as Task[]
+  const visibleTasks =
+    currentProfile.role === 'member'
+      ? rawTasks.filter((t) => isTaskVisibleForProfile(t, { ...currentProfile, id: user.id }))
+      : rawTasks
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
@@ -59,12 +65,12 @@ export default async function TasksPage() {
         </div>
         <div>
           <h1 className="text-lg font-bold text-slate-100 leading-tight">Tasks</h1>
-          <p className="text-sm text-slate-500">{(tasksResult.data ?? []).length} Tasks insgesamt</p>
+          <p className="text-sm text-slate-500">{visibleTasks.length} Tasks insgesamt</p>
         </div>
       </div>
 
       <TasksView
-        tasks={(tasksResult.data ?? []) as Task[]}
+        tasks={visibleTasks}
         profiles={(profilesResult.data ?? []) as Profile[]}
         currentProfile={currentProfile}
       />

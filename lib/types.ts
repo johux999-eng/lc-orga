@@ -32,6 +32,7 @@ export interface Task {
   deadline: string | null
   proof_url: string | null
   submitted_at: string | null
+  submitted_by: string | null
   reviewed_by: string | null
   completed_at: string | null
   created_at: string

@@ -13,6 +13,7 @@ import {
   getRateColor,
   getRateBarColor,
   isProfileInGroup,
+  isTaskVisibleForProfile,
 } from '@/lib/utils'
 import { User } from 'lucide-react'
 
@@ -52,7 +53,9 @@ export default async function MePage() {
 
   const { data: tasks } = await tasksQuery
 
-  const myTasks = (tasks ?? []) as Task[]
+  const myTasks = (tasks ?? []).filter((t) =>
+    isTaskVisibleForProfile(t as Task, { ...currentProfile, id: user.id })
+  ) as Task[]
   const [myStats] = computeStats([currentProfile], myTasks)
 
   return (
