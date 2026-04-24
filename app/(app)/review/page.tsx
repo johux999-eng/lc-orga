@@ -44,13 +44,7 @@ export default async function ReviewPage() {
       return false
     }
     if (currentProfile.role === 'chair') {
-      if (assignee) {
-        return assignee.role === 'head'
-      }
-      if (task.assigned_group) {
-        return task.assigned_group.startsWith('heads_')
-      }
-      return false
+      return true
     }
     return false
   })
@@ -68,7 +62,7 @@ export default async function ReviewPage() {
             <p className="text-sm text-slate-500">
               {currentProfile.role === 'head'
                 ? 'Member-Tasks deines Teams'
-                : 'Head-Tasks aller Teams'}
+                : 'Alle eingereichten Tasks'}
             </p>
           </div>
         </div>
