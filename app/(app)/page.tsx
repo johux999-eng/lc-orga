@@ -47,7 +47,7 @@ export default async function DashboardPage() {
           <LayoutDashboard size={16} className="text-blue-400" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-slate-100 leading-tight">Dashboard</h1>
+          <h1 className="text-lg font-bold text-slate-100 leading-tight">Leistungsübersicht</h1>
           <p className="text-sm text-slate-500">
             {currentProfile.full_name} · {currentProfile.role ? ROLE_LABELS[currentProfile.role] : ''}
             {currentProfile.team ? ` · ${TEAM_LABELS[currentProfile.team]}` : ''}
@@ -93,13 +93,7 @@ export default async function DashboardPage() {
 
       {/* Section label */}
       <div className="flex items-center gap-2 mb-3">
-        <h2 className="text-sm font-semibold text-slate-300">
-          {currentProfile.role === 'chair'
-            ? 'Alle Organisator:innen'
-            : currentProfile.role === 'head'
-            ? 'Dein Team'
-            : 'Deine Übersicht'}
-        </h2>
+        <h2 className="text-sm font-semibold text-slate-300">Alle Mitglieder</h2>
         <span className="text-xs text-slate-600">({allProfiles.length})</span>
       </div>
 
