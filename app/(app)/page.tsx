@@ -47,7 +47,7 @@ export default async function DashboardPage() {
           <LayoutDashboard size={16} className="text-blue-400" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-slate-100 leading-tight">Leistungsübersicht</h1>
+          <h1 className="text-lg font-bold text-slate-100 leading-tight">Dashboard</h1>
           <p className="text-sm text-slate-500">
             {currentProfile.full_name} · {currentProfile.role ? ROLE_LABELS[currentProfile.role] : ''}
             {currentProfile.team ? ` · ${TEAM_LABELS[currentProfile.team]}` : ''}
