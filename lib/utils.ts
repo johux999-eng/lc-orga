@@ -27,6 +27,7 @@ export const TEAMS: Team[] = [
   'Public Relations',
   'Technik/Mobility',
   'Event',
+  'Chairs',
 ]
 
 export const ROLES: Role[] = ['chair', 'head', 'member']

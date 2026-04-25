@@ -19,6 +19,7 @@ Next.js 14 App Router + Supabase + Tailwind. All data fetching happens server-si
 
 ### Auth & Access Control
 
+- **Magic-link only** (`signInWithMagicLink` in `lib/actions.ts`) → Supabase sends OTP email → `/auth/callback` exchanges code for session → redirect to `/`.
 - **Supabase ANON key + user JWT** → RLS is fully active on all tables. The server client (`lib/supabase/server.ts`) passes session cookies; there is no service-role bypass.
 - `middleware.ts` handles session refresh and redirects unapproved users to `/waiting`.
 - Role hierarchy: `chair > head > member`. Stored in the `profiles` table (`role`, `team`, `approved` columns).
@@ -28,13 +29,25 @@ Next.js 14 App Router + Supabase + Tailwind. All data fetching happens server-si
 
 All authenticated pages live under `app/(app)/` and are wrapped by `AppShell` (renders `Sidebar` + main content). Unauthenticated flows: `/login`, `/onboarding`, `/waiting`. The middleware guards all routes and enforces the `approved` flag before any page renders.
 
+| Route | Access | Description |
+|-------|--------|-------------|
+| `/` | all roles | Dashboard — aggregate stats + per-member table via `DashboardTable` |
+| `/tasks` | all roles | Task list filtered by role (see Role Visibility Rules) |
+| `/me` | all roles | Personal stats and own task list |
+| `/review` | head, chair | Approval queue — heads see their team's member tasks; chairs see all |
+| `/admin` | chair only | Approve pending new members; redirects non-chairs to `/` |
+
+All page components export `revalidate = 0` to force dynamic rendering (no stale caches).
+
 ### Data Model
 
 Two core tables in Supabase:
 - **`profiles`** — one row per auth user: `id, full_name, role, team, approved`
 - **`tasks`** — `id, title, description, assigned_to (uuid|null), co_assignees (uuid[]), assigned_group (text|null), team, status, deadline, proof_url, created_by, submitted_at, submitted_by, reviewed_by, completed_at`
 
-Task assignment is either to individual person(s) (`assigned_to` + `co_assignees`) or to a named group (`assigned_group`). The 13 group identifiers are defined in `lib/utils.ts` (`ASSIGNEE_GROUPS`, `GROUP_CRITERIA`). `isProfileInGroup()` is the single source of truth for group membership.
+Task assignment is either to individual person(s) (`assigned_to` + `co_assignees`) or to a named group (`assigned_group`). The 13 group identifiers are defined in `lib/utils.ts` (`ASSIGNEE_GROUPS`, `GROUP_CRITERIA`). `isProfileInGroup()` is the single source of truth for group membership. `GROUP_CRITERIA` is not exported — never bypass `isProfileInGroup`.
+
+Only `head` and `chair` roles can create tasks (enforced in both `createTask` action and `TasksView` UI).
 
 ### Task Status Flow
 
@@ -93,5 +106,7 @@ A `public.is_in_group(group_name text)` SECURITY DEFINER function is needed for 
 - `lib/actions.ts` — all Server Actions (auth, CRUD for tasks, approval/rejection, user management)
 - `components/TasksView.tsx` — full tasks UI including Create/Edit/Delete/Reassign/Submit modals and inline approve/reject buttons
 - `components/ReviewView.tsx` — review queue UI (head sees member tasks; chair sees all pending)
+- `components/DashboardTable.tsx` — per-member stats table used on the dashboard
 - `app/(app)/review/page.tsx` — server-side filtering of pending tasks per role before passing to ReviewView
 - `app/(app)/me/page.tsx` — personal stats and task list; applies `isTaskVisibleForProfile` filter before computing stats
+- `app/(app)/admin/page.tsx` — chair-only page; fetches unapproved profiles and passes to `AdminView`
