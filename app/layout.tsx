@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
-import { DM_Sans } from 'next/font/google'
+import { Playfair_Display } from 'next/font/google'
 import './globals.css'
 
-const dmSans = DM_Sans({
+const playfair = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-dm-sans',
+  variable: '--font-playfair',
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 })
 
 export const metadata: Metadata = {
@@ -16,8 +17,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" className={dmSans.variable}>
-      <body className="font-sans text-slate-100 min-h-screen bg-[#080a12]">
+    <html lang="de" className={playfair.variable}>
+      <body className="font-sans text-lc-ink min-h-screen bg-lc-cream">
         {children}
       </body>
     </html>

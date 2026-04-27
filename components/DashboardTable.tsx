@@ -27,103 +27,103 @@ export function DashboardTable({ stats, currentUserId }: Props) {
     <div className="space-y-3">
       {/* Search */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-lc-faint" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Suche nach Name oder Team…"
-          className="w-full pl-9 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:bg-slate-800"
+          className="w-full pl-9 pr-4 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
         />
       </div>
 
       {/* Table — desktop */}
-      <div className="hidden sm:block overflow-x-auto rounded-xl border border-slate-800">
-        <table className="w-full text-sm">
+      <div className="hidden sm:block overflow-x-auto rounded-xl border border-lc-border bg-white">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-900/80">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <tr className="border-b border-lc-border bg-lc-cream/60">
+              <th className="text-left px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Name
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-left px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Team
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-right px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Offen
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-right px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Prüfung
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-right px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Erledigt
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-right px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Quote
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-lc-border/70">
             {filtered.map(({ profile, open, overdue, pending, done, total, rate }) => (
               <tr
                 key={profile.id}
-                className={`hover:bg-slate-800/30 transition-colors ${
-                  profile.id === currentUserId ? 'bg-blue-600/5' : ''
+                className={`hover:bg-lc-hover/50 transition-colors ${
+                  profile.id === currentUserId ? 'bg-lc-navy/[0.03]' : ''
                 }`}
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-300 shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-lc-navy/10 flex items-center justify-center text-[10px] font-semibold text-lc-navy shrink-0">
                       {profile.full_name?.slice(0, 2).toUpperCase() ?? '?'}
                     </div>
                     <div>
-                      <span className="font-medium text-slate-100">
+                      <span className="font-medium text-lc-ink">
                         {profile.full_name ?? '—'}
                       </span>
                       {profile.id === currentUserId && (
-                        <span className="ml-1.5 text-[10px] text-blue-400 font-medium">Du</span>
+                        <span className="ml-1.5 text-[10px] text-lc-blue font-medium">Du</span>
                       )}
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
                   <div>
-                    <span className="text-slate-300">
+                    <span className="text-lc-secondary">
                       {profile.team ? TEAM_LABELS[profile.team] : '—'}
                     </span>
-                    <span className="ml-1.5 text-[10px] text-slate-500">
+                    <span className="ml-1.5 text-[11px] text-lc-faint">
                       {profile.role ? ROLE_LABELS[profile.role] : ''}
                     </span>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
                   {overdue > 0 ? (
-                    <span className="text-red-400 font-medium">{open}</span>
+                    <span className="text-red-600 font-medium">{open}</span>
                   ) : (
-                    <span className="text-slate-400">{open}</span>
+                    <span className="text-lc-muted">{open}</span>
                   )}
                   {overdue > 0 && (
-                    <span className="ml-1 text-xs text-red-400/70">({overdue} überfällig)</span>
+                    <span className="ml-1 text-[11px] text-red-500/80">({overdue} überfällig)</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
                   {pending > 0 ? (
-                    <span className="text-amber-400 font-medium">{pending}</span>
+                    <span className="text-amber-600 font-medium">{pending}</span>
                   ) : (
-                    <span className="text-slate-500">{pending}</span>
+                    <span className="text-lc-faint">{pending}</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <span className="text-emerald-400 font-medium">{done}</span>
-                  <span className="text-slate-600 text-xs ml-0.5">/{total}</span>
+                  <span className="text-emerald-600 font-medium">{done}</span>
+                  <span className="text-lc-faint text-[11px] ml-0.5">/{total}</span>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <div className="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                    <div className="w-16 h-1.5 rounded-full bg-lc-border overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${getRateBarColor(rate)}`}
                         style={{ width: `${rate}%` }}
                       />
                     </div>
-                    <span className={`text-sm font-semibold tabular-nums w-10 text-right ${getRateColor(rate)}`}>
+                    <span className={`text-[13px] font-semibold tabular-nums w-10 text-right ${getRateColor(rate)}`}>
                       {rate}%
                     </span>
                   </div>
@@ -133,7 +133,7 @@ export function DashboardTable({ stats, currentUserId }: Props) {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <p className="text-center py-12 text-slate-500 text-sm">Keine Einträge gefunden.</p>
+          <p className="text-center py-12 text-lc-faint text-[13px]">Keine Einträge gefunden.</p>
         )}
       </div>
 
@@ -142,25 +142,25 @@ export function DashboardTable({ stats, currentUserId }: Props) {
         {filtered.map(({ profile, open, overdue, pending, done, total, rate }) => (
           <div
             key={profile.id}
-            className={`rounded-xl border p-4 space-y-3 ${
+            className={`rounded-xl border p-4 space-y-3 bg-white ${
               profile.id === currentUserId
-                ? 'bg-blue-600/5 border-blue-600/20'
-                : 'bg-slate-900 border-slate-800'
+                ? 'border-lc-navy/20'
+                : 'border-lc-border'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-300">
+                <div className="w-8 h-8 rounded-full bg-lc-navy/10 flex items-center justify-center text-[10px] font-semibold text-lc-navy">
                   {profile.full_name?.slice(0, 2).toUpperCase() ?? '?'}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-100">
+                  <p className="text-[13px] font-medium text-lc-ink">
                     {profile.full_name ?? '—'}
                     {profile.id === currentUserId && (
-                      <span className="ml-1.5 text-[10px] text-blue-400">Du</span>
+                      <span className="ml-1.5 text-[10px] text-lc-blue">Du</span>
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-[11px] text-lc-faint">
                     {profile.role ? ROLE_LABELS[profile.role] : ''}
                     {profile.team ? ` · ${TEAM_LABELS[profile.team]}` : ''}
                   </p>
@@ -168,34 +168,34 @@ export function DashboardTable({ stats, currentUserId }: Props) {
               </div>
               <span className={`text-lg font-bold ${getRateColor(rate)}`}>{rate}%</span>
             </div>
-            <div className="w-full h-1 rounded-full bg-slate-700 overflow-hidden">
+            <div className="w-full h-1 rounded-full bg-lc-border overflow-hidden">
               <div
                 className={`h-full rounded-full ${getRateBarColor(rate)}`}
                 style={{ width: `${rate}%` }}
               />
             </div>
-            <div className="flex gap-4 text-xs">
+            <div className="flex gap-4 text-[11px]">
               <div>
-                <span className={overdue > 0 ? 'text-red-400 font-medium' : 'text-slate-400'}>
+                <span className={overdue > 0 ? 'text-red-600 font-medium' : 'text-lc-muted'}>
                   {open}
                 </span>{' '}
-                <span className="text-slate-600">offen</span>
+                <span className="text-lc-faint">offen</span>
               </div>
               <div>
-                <span className={pending > 0 ? 'text-amber-400 font-medium' : 'text-slate-500'}>
+                <span className={pending > 0 ? 'text-amber-600 font-medium' : 'text-lc-faint'}>
                   {pending}
                 </span>{' '}
-                <span className="text-slate-600">prüfung</span>
+                <span className="text-lc-faint">prüfung</span>
               </div>
               <div>
-                <span className="text-emerald-400 font-medium">{done}</span>
-                <span className="text-slate-600">/{total} erledigt</span>
+                <span className="text-emerald-600 font-medium">{done}</span>
+                <span className="text-lc-faint">/{total} erledigt</span>
               </div>
             </div>
           </div>
         ))}
         {filtered.length === 0 && (
-          <p className="text-center py-10 text-slate-500 text-sm">Keine Einträge gefunden.</p>
+          <p className="text-center py-10 text-lc-faint text-[13px]">Keine Einträge gefunden.</p>
         )}
       </div>
     </div>

@@ -24,6 +24,35 @@ import {
   rejectTask,
 } from '@/lib/actions'
 
+// ── Shared modal shell ─────────────────────────────────────────────────────────
+
+function ModalShell({
+  title,
+  onClose,
+  children,
+  maxW = 'sm:max-w-lg',
+}: {
+  title: string
+  onClose: () => void
+  children: React.ReactNode
+  maxW?: string
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-lc-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className={`relative w-full ${maxW} bg-white rounded-t-2xl sm:rounded-2xl border border-lc-border shadow-xl`}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-lc-border">
+          <h2 className="text-[15px] font-semibold text-lc-ink">{title}</h2>
+          <button onClick={onClose} className="text-lc-faint hover:text-lc-ink transition-colors text-xl leading-none">
+            ×
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 // ── Edit Task Modal ────────────────────────────────────────────────────────────
 
 function EditTaskModal({ task, onClose }: { task: Task; onClose: () => void }) {
@@ -45,56 +74,49 @@ function EditTaskModal({ task, onClose }: { task: Task; onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-lg bg-slate-900 rounded-t-2xl sm:rounded-2xl border border-slate-700/50 shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-slate-100">Task bearbeiten</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-200 transition-colors text-lg leading-none">×</button>
+    <ModalShell title="Task bearbeiten" onClose={onClose}>
+      <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Titel *</label>
+          <input
+            name="title"
+            required
+            defaultValue={task.title}
+            className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
+          />
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Titel *</label>
-            <input
-              name="title"
-              required
-              defaultValue={task.title}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Beschreibung</label>
-            <textarea
-              name="description"
-              rows={2}
-              defaultValue={task.description ?? ''}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70 resize-none"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Fällig am *</label>
-            <input
-              name="deadline"
-              type="date"
-              required
-              defaultValue={task.deadline ?? ''}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70 [color-scheme:dark]"
-            />
-          </div>
-          {error && (
-            <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{error}</p>
-          )}
-          <div className="flex gap-2 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 border border-slate-700 hover:bg-slate-800 transition-colors">
-              Abbrechen
-            </button>
-            <button type="submit" disabled={isPending} className="flex-1 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 transition-colors">
-              {isPending ? 'Speichern…' : 'Speichern'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Beschreibung</label>
+          <textarea
+            name="description"
+            rows={2}
+            defaultValue={task.description ?? ''}
+            className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue resize-none transition-colors"
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Fällig am *</label>
+          <input
+            name="deadline"
+            type="date"
+            required
+            defaultValue={task.deadline ?? ''}
+            className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
+          />
+        </div>
+        {error && (
+          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+        )}
+        <div className="flex gap-2 pt-1">
+          <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors">
+            Abbrechen
+          </button>
+          <button type="submit" disabled={isPending} className="flex-1 py-2 rounded-lg text-[13px] font-medium bg-lc-navy text-white hover:bg-[#0d2491] disabled:opacity-60 transition-colors">
+            {isPending ? 'Speichern…' : 'Speichern'}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
   )
 }
 
@@ -117,35 +139,28 @@ function DeleteModal({ task, onClose }: { task: Task; onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-md bg-slate-900 rounded-t-2xl sm:rounded-2xl border border-slate-700/50 shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-slate-100">Task löschen</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-200 text-lg">×</button>
+    <ModalShell title="Task löschen" onClose={onClose} maxW="sm:max-w-md">
+      <div className="p-5 space-y-4">
+        <div className="bg-lc-cream rounded-lg p-3 border border-lc-border">
+          <p className="text-[13px] font-medium text-lc-ink">{task.title}</p>
+          <p className="text-[11px] text-lc-faint mt-0.5">
+            {task.assigned_profile?.full_name ?? '—'} · {formatDate(task.deadline)}
+          </p>
         </div>
-        <div className="p-5 space-y-4">
-          <div className="bg-slate-800/50 rounded-lg p-3">
-            <p className="text-sm font-medium text-slate-200">{task.title}</p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {task.assigned_profile?.full_name ?? '—'} · {formatDate(task.deadline)}
-            </p>
-          </div>
-          <p className="text-sm text-slate-400">Dieser Task wird unwiderruflich gelöscht.</p>
-          {error && (
-            <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{error}</p>
-          )}
-          <div className="flex gap-2">
-            <button onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 border border-slate-700 hover:bg-slate-800 transition-colors">
-              Abbrechen
-            </button>
-            <button onClick={handleDelete} disabled={isPending} className="flex-1 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-500 disabled:opacity-60 transition-colors">
-              {isPending ? 'Löschen…' : 'Löschen'}
-            </button>
-          </div>
+        <p className="text-[13px] text-lc-muted">Dieser Task wird unwiderruflich gelöscht.</p>
+        {error && (
+          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+        )}
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors">
+            Abbrechen
+          </button>
+          <button onClick={handleDelete} disabled={isPending} className="flex-1 py-2 rounded-lg text-[13px] font-medium bg-red-600 text-white hover:bg-red-500 disabled:opacity-60 transition-colors">
+            {isPending ? 'Löschen…' : 'Löschen'}
+          </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }
 
@@ -201,89 +216,82 @@ function ReassignModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-md bg-slate-900 rounded-t-2xl sm:rounded-2xl border border-slate-700/50 shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-slate-100">Neu zuweisen</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-200 text-lg">×</button>
+    <ModalShell title="Neu zuweisen" onClose={onClose} maxW="sm:max-w-md">
+      <div className="p-5 space-y-4">
+        <div className="bg-lc-cream rounded-lg p-3 border border-lc-border">
+          <p className="text-[13px] font-medium text-lc-ink">{task.title}</p>
         </div>
-        <div className="p-5 space-y-4">
-          <div className="bg-slate-800/50 rounded-lg p-3">
-            <p className="text-sm font-medium text-slate-200">{task.title}</p>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Zuweisen an *</label>
-            <div className="flex gap-1 mb-2 p-0.5 bg-slate-800 rounded-lg border border-slate-700">
-              <button
-                type="button"
-                onClick={() => setAssignMode('persons')}
-                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
-                  assignMode === 'persons' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Person(en)
-              </button>
-              <button
-                type="button"
-                onClick={() => setAssignMode('group')}
-                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
-                  assignMode === 'group' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Gruppe
-              </button>
-            </div>
-            {assignMode === 'persons' ? (
-              <div className="max-h-48 overflow-y-auto border border-slate-700 rounded-lg divide-y divide-slate-800">
-                {profiles.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/70 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedPersonIds.includes(p.id)}
-                      onChange={() => togglePerson(p.id)}
-                      className="accent-blue-500"
-                    />
-                    <span className="text-sm text-slate-200">
-                      {p.full_name}
-                      <span className="text-xs text-slate-500 ml-1">
-                        ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
-                      </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            ) : (
-              <select
-                value={selectedGroup}
-                onChange={(e) => setSelectedGroup(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
-              >
-                <option value="">— Gruppe wählen —</option>
-                {ASSIGNEE_GROUPS.map((g) => (
-                  <option key={g} value={g}>{GROUP_LABELS[g]}</option>
-                ))}
-              </select>
-            )}
-          </div>
-          {error && (
-            <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{error}</p>
-          )}
-          <div className="flex gap-2">
-            <button onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 border border-slate-700 hover:bg-slate-800 transition-colors">
-              Abbrechen
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Zuweisen an *</label>
+          <div className="flex gap-1 mb-2 p-0.5 bg-lc-cream rounded-lg border border-lc-border">
+            <button
+              type="button"
+              onClick={() => setAssignMode('persons')}
+              className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
+                assignMode === 'persons' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
+              }`}
+            >
+              Person(en)
             </button>
             <button
-              onClick={handleReassign}
-              disabled={isPending}
-              className="flex-1 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 transition-colors"
+              type="button"
+              onClick={() => setAssignMode('group')}
+              className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
+                assignMode === 'group' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
+              }`}
             >
-              {isPending ? 'Zuweisen…' : 'Zuweisen'}
+              Gruppe
             </button>
           </div>
+          {assignMode === 'persons' ? (
+            <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
+              {profiles.map((p) => (
+                <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedPersonIds.includes(p.id)}
+                    onChange={() => togglePerson(p.id)}
+                    className="accent-lc-navy"
+                  />
+                  <span className="text-[13px] text-lc-ink">
+                    {p.full_name}
+                    <span className="text-[11px] text-lc-faint ml-1">
+                      ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <select
+              value={selectedGroup}
+              onChange={(e) => setSelectedGroup(e.target.value)}
+              className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
+            >
+              <option value="">— Gruppe wählen —</option>
+              {ASSIGNEE_GROUPS.map((g) => (
+                <option key={g} value={g}>{GROUP_LABELS[g]}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        {error && (
+          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+        )}
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors">
+            Abbrechen
+          </button>
+          <button
+            onClick={handleReassign}
+            disabled={isPending}
+            className="flex-1 py-2 rounded-lg text-[13px] font-medium bg-lc-navy text-white hover:bg-[#0d2491] disabled:opacity-60 transition-colors"
+          >
+            {isPending ? 'Zuweisen…' : 'Zuweisen'}
+          </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }
 
@@ -310,7 +318,6 @@ function CreateTaskModal({
     return true
   })
 
-  // Heads can only assign groups that contain members of their own team
   const availableGroups = ASSIGNEE_GROUPS.filter((g) => {
     if (currentProfile.role === 'head') {
       return isProfileInGroup(g, { role: 'member', team: currentProfile.team })
@@ -345,149 +352,140 @@ function CreateTaskModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-lg bg-slate-900 rounded-t-2xl sm:rounded-2xl border border-slate-700/50 shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-slate-100">Neuen Task erstellen</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-200 transition-colors text-lg leading-none">
-            ×
-          </button>
+    <ModalShell title="Neuen Task erstellen" onClose={onClose}>
+      <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Titel *</label>
+          <input
+            name="title"
+            required
+            placeholder="Task-Titel…"
+            className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
+          />
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Beschreibung</label>
+          <textarea
+            name="description"
+            rows={2}
+            placeholder="Optionale Details…"
+            className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue resize-none transition-colors"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Titel *</label>
-            <input
-              name="title"
-              required
-              placeholder="Task-Titel…"
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500/70"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Beschreibung</label>
-            <textarea
-              name="description"
-              rows={2}
-              placeholder="Optionale Details…"
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500/70 resize-none"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Team *</label>
-              {currentProfile.role === 'head' ? (
-                <>
-                  <input type="hidden" name="team" value={currentProfile.team ?? ''} />
-                  <div className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-400">
-                    {currentProfile.team ? TEAM_LABELS[currentProfile.team] : '—'}
-                  </div>
-                </>
-              ) : (
-                <select
-                  name="team"
-                  required
-                  value={selectedTeam}
-                  onChange={(e) => setSelectedTeam(e.target.value as Team)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
-                >
-                  <option value="">— Team wählen —</option>
-                  {TEAMS.map((t) => (
-                    <option key={t} value={t}>
-                      {TEAM_LABELS[t]}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Fällig am *</label>
-              <input
-                name="deadline"
-                type="date"
-                required
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70 [color-scheme:dark]"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Zuweisen an *</label>
-            <div className="flex gap-1 mb-2 p-0.5 bg-slate-800 rounded-lg border border-slate-700">
-              <button
-                type="button"
-                onClick={() => setAssignMode('persons')}
-                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
-                  assignMode === 'persons' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Person(en)
-              </button>
-              <button
-                type="button"
-                onClick={() => setAssignMode('group')}
-                className={`flex-1 py-1 text-xs font-medium rounded-md transition-colors ${
-                  assignMode === 'group' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Gruppe
-              </button>
-            </div>
-            <input type="hidden" name="assign_mode" value={assignMode} />
-            {assignMode === 'persons' ? (
-              <div className="max-h-48 overflow-y-auto border border-slate-700 rounded-lg divide-y divide-slate-800">
-                {assignableProfiles.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/70 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="assigned_to"
-                      value={p.id}
-                      className="accent-blue-500"
-                    />
-                    <span className="text-sm text-slate-200">
-                      {p.full_name}
-                      <span className="text-xs text-slate-500 ml-1">
-                        ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
-                      </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
+            <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Team *</label>
+            {currentProfile.role === 'head' ? (
+              <>
+                <input type="hidden" name="team" value={currentProfile.team ?? ''} />
+                <div className="w-full px-3 py-2 bg-lc-hover border border-lc-border rounded-lg text-[13px] text-lc-muted">
+                  {currentProfile.team ? TEAM_LABELS[currentProfile.team] : '—'}
+                </div>
+              </>
             ) : (
               <select
-                name="assigned_group"
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
+                name="team"
+                required
+                value={selectedTeam}
+                onChange={(e) => setSelectedTeam(e.target.value as Team)}
+                className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
               >
-                <option value="">— Gruppe wählen —</option>
-                {availableGroups.map((g) => (
-                  <option key={g} value={g}>{GROUP_LABELS[g]}</option>
+                <option value="">— Team wählen —</option>
+                {TEAMS.map((t) => (
+                  <option key={t} value={t}>
+                    {TEAM_LABELS[t]}
+                  </option>
                 ))}
               </select>
             )}
           </div>
-          {error && (
-            <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-          <div className="flex gap-2 pt-1">
+          <div>
+            <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Fällig am *</label>
+            <input
+              name="deadline"
+              type="date"
+              required
+              className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Zuweisen an *</label>
+          <div className="flex gap-1 mb-2 p-0.5 bg-lc-cream rounded-lg border border-lc-border">
             <button
               type="button"
-              onClick={onClose}
-              className="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 border border-slate-700 hover:bg-slate-800 transition-colors"
+              onClick={() => setAssignMode('persons')}
+              className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
+                assignMode === 'persons' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
+              }`}
             >
-              Abbrechen
+              Person(en)
             </button>
             <button
-              type="submit"
-              disabled={isPending}
-              className="flex-1 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 transition-colors"
+              type="button"
+              onClick={() => setAssignMode('group')}
+              className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
+                assignMode === 'group' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
+              }`}
             >
-              {isPending ? 'Erstelle…' : 'Erstellen'}
+              Gruppe
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+          <input type="hidden" name="assign_mode" value={assignMode} />
+          {assignMode === 'persons' ? (
+            <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
+              {assignableProfiles.map((p) => (
+                <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="assigned_to"
+                    value={p.id}
+                    className="accent-lc-navy"
+                  />
+                  <span className="text-[13px] text-lc-ink">
+                    {p.full_name}
+                    <span className="text-[11px] text-lc-faint ml-1">
+                      ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <select
+              name="assigned_group"
+              className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
+            >
+              <option value="">— Gruppe wählen —</option>
+              {availableGroups.map((g) => (
+                <option key={g} value={g}>{GROUP_LABELS[g]}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        {error && (
+          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+        <div className="flex gap-2 pt-1">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors"
+          >
+            Abbrechen
+          </button>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="flex-1 py-2 rounded-lg text-[13px] font-medium bg-lc-navy text-white hover:bg-[#0d2491] disabled:opacity-60 transition-colors"
+          >
+            {isPending ? 'Erstelle…' : 'Erstellen'}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
   )
 }
 
@@ -511,59 +509,50 @@ function SubmitModal({ task, onClose }: { task: Task; onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-md bg-slate-900 rounded-t-2xl sm:rounded-2xl border border-slate-700/50 shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-slate-100">Task einreichen</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-200 transition-colors text-lg">
-            ×
+    <ModalShell title="Task einreichen" onClose={onClose} maxW="sm:max-w-md">
+      <div className="p-5 space-y-4">
+        <div className="bg-lc-cream rounded-lg p-3 border border-lc-border">
+          <p className="text-[13px] font-medium text-lc-ink">{task.title}</p>
+          {task.description && (
+            <p className="text-[11px] text-lc-faint mt-1">{task.description}</p>
+          )}
+        </div>
+        <div>
+          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">
+            Anmerkung zur Erledigung <span className="text-lc-faint normal-case tracking-normal">(optional)</span>
+          </label>
+          <textarea
+            value={proofUrl}
+            onChange={(e) => setProofUrl(e.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="z.B. Mail an Sponsor X gesendet, Bestätigung erhalten…"
+            className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue resize-none transition-colors"
+          />
+          <p className="text-[11px] text-lc-faint text-right mt-1">{proofUrl.length}/500</p>
+        </div>
+        {error && (
+          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors"
+          >
+            Abbrechen
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isPending}
+            className="flex-1 py-2 rounded-lg text-[13px] font-medium bg-lc-navy text-white hover:bg-[#0d2491] disabled:opacity-60 transition-colors"
+          >
+            {isPending ? 'Einreichen…' : 'Einreichen'}
           </button>
         </div>
-        <div className="p-5 space-y-4">
-          <div className="bg-slate-800/50 rounded-lg p-3">
-            <p className="text-sm font-medium text-slate-200">{task.title}</p>
-            {task.description && (
-              <p className="text-xs text-slate-500 mt-1">{task.description}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">
-              Anmerkung zur Erledigung <span className="text-slate-600">(optional)</span>
-            </label>
-            <textarea
-              value={proofUrl}
-              onChange={(e) => setProofUrl(e.target.value)}
-              maxLength={500}
-              rows={3}
-              placeholder="z.B. Mail an Sponsor X gesendet, Bestätigung erhalten…"
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500/70 resize-none"
-            />
-            <p className="text-xs text-slate-600 text-right mt-1">{proofUrl.length}/500</p>
-          </div>
-          {error && (
-            <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 border border-slate-700 hover:bg-slate-800 transition-colors"
-            >
-              Abbrechen
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isPending}
-              className="flex-1 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 transition-colors"
-            >
-              {isPending ? 'Einreichen…' : 'Einreichen'}
-            </button>
-          </div>
-        </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }
 
@@ -617,19 +606,19 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
       {/* Header row */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
         <div className="flex-1 relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-lc-faint" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Suche…"
-            className="w-full pl-9 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as TaskStatus | 'all')}
-            className="px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-blue-500/50"
+            className="px-3 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-secondary focus:outline-none focus:border-lc-blue transition-colors"
           >
             <option value="all">Alle Status</option>
             {(Object.keys(STATUS_LABELS) as TaskStatus[]).map((s) => (
@@ -643,7 +632,7 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
             <select
               value={filterTeam}
               onChange={(e) => setFilterTeam(e.target.value as Team | 'all')}
-              className="px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-blue-500/50"
+              className="px-3 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-secondary focus:outline-none focus:border-lc-blue transition-colors"
             >
               <option value="all">Alle Teams</option>
               {TEAMS.map((t) => (
@@ -656,10 +645,10 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
 
           <button
             onClick={() => setFilterMine((v) => !v)}
-            className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+            className={`px-3 py-2 rounded-lg text-[13px] font-medium border transition-colors ${
               filterMine
-                ? 'bg-blue-600/20 text-blue-400 border-blue-600/30'
-                : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:text-slate-200'
+                ? 'bg-lc-navy/10 text-lc-navy border-lc-navy/25'
+                : 'bg-white text-lc-muted border-lc-border hover:text-lc-ink hover:border-lc-border-strong'
             }`}
           >
             Meine Tasks
@@ -668,9 +657,9 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
           {canCreate && (
             <button
               onClick={() => setCreateOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium bg-lc-navy text-white hover:bg-[#0d2491] transition-colors"
             >
-              <Plus size={14} />
+              <Plus size={13} />
               Neuer Task
             </button>
           )}
@@ -678,28 +667,28 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
       </div>
 
       {/* Tasks — desktop table */}
-      <div className="hidden sm:block overflow-x-auto rounded-xl border border-slate-800">
-        <table className="w-full text-sm">
+      <div className="hidden sm:block overflow-x-auto rounded-xl border border-lc-border bg-white">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-900/80">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-1/3">
+            <tr className="border-b border-lc-border bg-lc-cream/60">
+              <th className="text-left px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider w-1/3">
                 Titel
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-left px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Zugewiesen an
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-left px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Fällig
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-left px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Status
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="text-right px-4 py-3 font-didot text-[11px] font-bold text-lc-muted uppercase tracking-wider">
                 Aktion
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-lc-border/70">
             {filtered.map((task) => (
               <TaskTableRow
                 key={task.id}
@@ -714,7 +703,7 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <p className="text-center py-12 text-slate-500 text-sm">
+          <p className="text-center py-12 text-lc-faint text-[13px]">
             Keine Tasks gefunden.
           </p>
         )}
@@ -734,13 +723,13 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
           />
         ))}
         {filtered.length === 0 && (
-          <p className="text-center py-10 text-slate-500 text-sm">Keine Tasks gefunden.</p>
+          <p className="text-center py-10 text-lc-faint text-[13px]">Keine Tasks gefunden.</p>
         )}
       </div>
 
       {/* Count */}
       {filtered.length > 0 && (
-        <p className="mt-3 text-xs text-slate-600 text-right">
+        <p className="mt-3 text-[11px] text-lc-faint text-right">
           {filtered.length} von {tasks.length} Tasks
         </p>
       )}
@@ -826,36 +815,36 @@ function TaskTableRow({
   }
 
   return (
-    <tr className="hover:bg-slate-800/20 transition-colors">
+    <tr className="hover:bg-lc-hover/40 transition-colors">
       <td className="px-4 py-3">
         <div>
-          <p className="font-medium text-slate-200 leading-snug">{task.title}</p>
+          <p className="font-medium text-lc-ink leading-snug">{task.title}</p>
           {task.description && (
-            <p className="text-xs text-slate-500 truncate max-w-xs mt-0.5">{task.description}</p>
+            <p className="text-[11px] text-lc-faint truncate max-w-xs mt-0.5">{task.description}</p>
           )}
           {task.proof_url && (
-            <p className="text-xs text-slate-500 italic truncate max-w-xs mt-0.5">✓ {task.proof_url}</p>
+            <p className="text-[11px] text-lc-faint italic truncate max-w-xs mt-0.5">✓ {task.proof_url}</p>
           )}
         </div>
       </td>
       <td className="px-4 py-3">
         {task.assigned_group ? (
-          <span className="text-slate-300">{GROUP_LABELS[task.assigned_group] ?? task.assigned_group}</span>
+          <span className="text-lc-secondary">{GROUP_LABELS[task.assigned_group] ?? task.assigned_group}</span>
         ) : (
           <div>
-            <span className="text-slate-300">{task.assigned_profile?.full_name ?? '—'}</span>
+            <span className="text-lc-secondary">{task.assigned_profile?.full_name ?? '—'}</span>
             {(task.co_assignees ?? []).length > 0 && (
-              <span className="ml-1 text-xs text-slate-500">+{task.co_assignees.length}</span>
+              <span className="ml-1 text-[11px] text-lc-faint">+{task.co_assignees.length}</span>
             )}
             {task.assigned_profile?.role && (
-              <span className="ml-1 text-xs text-slate-600">
+              <span className="ml-1 text-[11px] text-lc-faint">
                 {ROLE_LABELS[task.assigned_profile.role]}
               </span>
             )}
           </div>
         )}
       </td>
-      <td className="px-4 py-3 text-slate-400">{formatDate(task.deadline)}</td>
+      <td className="px-4 py-3 text-lc-muted">{formatDate(task.deadline)}</td>
       <td className="px-4 py-3">
         <StatusBadge task={task} />
       </td>
@@ -864,7 +853,7 @@ function TaskTableRow({
           {canSubmit && (
             <button
               onClick={onSubmit}
-              className="px-2.5 py-1 rounded-md text-xs font-medium bg-blue-600/20 text-blue-400 border border-blue-600/20 hover:bg-blue-600/30 transition-colors"
+              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-lc-navy/10 text-lc-navy border border-lc-navy/20 hover:bg-lc-navy/15 transition-colors"
             >
               Einreichen
             </button>
@@ -875,7 +864,7 @@ function TaskTableRow({
                 onClick={handleApprove}
                 disabled={isPending}
                 title="Genehmigen"
-                className="p-1.5 rounded-md text-emerald-400 hover:bg-emerald-400/10 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 transition-colors"
               >
                 <CheckCircle size={14} />
               </button>
@@ -883,7 +872,7 @@ function TaskTableRow({
                 onClick={handleReject}
                 disabled={isPending}
                 title="Zurückweisen"
-                className="p-1.5 rounded-md text-red-400 hover:bg-red-400/10 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
               >
                 <XCircle size={14} />
               </button>
@@ -894,21 +883,21 @@ function TaskTableRow({
               <button
                 onClick={onReassign}
                 title="Neu zuweisen"
-                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-700 transition-colors"
+                className="p-1.5 rounded-md text-lc-muted hover:bg-lc-hover transition-colors"
               >
                 <UserCheck size={14} />
               </button>
               <button
                 onClick={onEdit}
                 title="Bearbeiten"
-                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-700 transition-colors"
+                className="p-1.5 rounded-md text-lc-muted hover:bg-lc-hover transition-colors"
               >
                 <Pencil size={14} />
               </button>
               <button
                 onClick={onDelete}
                 title="Löschen"
-                className="p-1.5 rounded-md text-red-400/60 hover:bg-red-400/10 hover:text-red-400 transition-colors"
+                className="p-1.5 rounded-md text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
               >
                 <Trash2 size={14} />
               </button>
@@ -966,21 +955,21 @@ function TaskCard({
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+    <div className="bg-white border border-lc-border rounded-xl p-4 space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-slate-100 leading-snug">{task.title}</p>
+          <p className="font-medium text-lc-ink leading-snug">{task.title}</p>
           {task.description && (
-            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{task.description}</p>
+            <p className="text-[11px] text-lc-faint mt-0.5 line-clamp-2">{task.description}</p>
           )}
           {task.proof_url && (
-            <p className="text-xs text-slate-500 italic mt-0.5 line-clamp-2">✓ {task.proof_url}</p>
+            <p className="text-[11px] text-lc-faint italic mt-0.5 line-clamp-2">✓ {task.proof_url}</p>
           )}
         </div>
         <StatusBadge task={task} />
       </div>
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-slate-500">
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="text-lc-faint">
           {task.assigned_group
             ? GROUP_LABELS[task.assigned_group] ?? task.assigned_group
             : task.assigned_profile?.full_name ?? '—'}
@@ -993,7 +982,7 @@ function TaskCard({
           {canSubmit && (
             <button
               onClick={onSubmit}
-              className="px-2.5 py-1 rounded-md text-xs font-medium bg-blue-600 text-white"
+              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-lc-navy text-white"
             >
               Einreichen
             </button>
@@ -1003,14 +992,14 @@ function TaskCard({
               <button
                 onClick={handleApprove}
                 disabled={isPending}
-                className="p-1.5 rounded-md text-emerald-400 hover:bg-emerald-400/10 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 transition-colors"
               >
                 <CheckCircle size={14} />
               </button>
               <button
                 onClick={handleReject}
                 disabled={isPending}
-                className="p-1.5 rounded-md text-red-400 hover:bg-red-400/10 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
               >
                 <XCircle size={14} />
               </button>
@@ -1018,13 +1007,13 @@ function TaskCard({
           )}
           {isChair && (
             <>
-              <button onClick={onReassign} className="p-1.5 rounded-md text-slate-400 hover:bg-slate-700 transition-colors">
+              <button onClick={onReassign} className="p-1.5 rounded-md text-lc-muted hover:bg-lc-hover transition-colors">
                 <UserCheck size={14} />
               </button>
-              <button onClick={onEdit} className="p-1.5 rounded-md text-slate-400 hover:bg-slate-700 transition-colors">
+              <button onClick={onEdit} className="p-1.5 rounded-md text-lc-muted hover:bg-lc-hover transition-colors">
                 <Pencil size={14} />
               </button>
-              <button onClick={onDelete} className="p-1.5 rounded-md text-red-400/60 hover:bg-red-400/10 hover:text-red-400 transition-colors">
+              <button onClick={onDelete} className="p-1.5 rounded-md text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors">
                 <Trash2 size={14} />
               </button>
             </>

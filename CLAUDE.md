@@ -98,6 +98,41 @@ OR (SELECT role FROM profiles WHERE id = auth.uid()) = 'chair'
 
 A `public.is_in_group(group_name text)` SECURITY DEFINER function is needed for the group clause — it maps each group identifier to `(role, team)` criteria against `auth.uid()`.
 
+### Design System
+
+Light-mode, law-congress aesthetic. Never revert to dark Tailwind slate classes.
+
+**Tailwind tokens** (`lc-*` — defined in `tailwind.config.ts`):
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `lc-navy` | `#081c74` | Sidebar bg, primary buttons, icon accents |
+| `lc-blue` | `#1e69c4` | Focus rings, interactive highlights |
+| `lc-cream` | `#f8f5f2` | Page background, input backgrounds |
+| `lc-ink` | `#202020` | Primary text |
+| `lc-secondary` | `#363636` | Secondary text |
+| `lc-muted` | `#4a4a4a` | Muted text, labels |
+| `lc-faint` | `#8a8682` | Placeholder, timestamps |
+| `lc-border` | `#e5e2de` | Default borders |
+| `lc-border-strong` | `#d4d0cb` | Input borders |
+| `lc-hover` | `#f0ede9` | Hover backgrounds |
+
+**Fonts:**
+- `font-sans` / `font-avenir` → `'Avenir Next', 'Avenir', -apple-system, …` (system font; no import needed)
+- `font-didot` → `'Didot', var(--font-playfair), 'Bodoni MT', Georgia, serif` — Playfair Display loaded from Google Fonts in `app/layout.tsx` as `--font-playfair`
+
+**Typography rules** (from brand guide):
+- Page headings: `text-xl font-medium` (Avenir Next, 20 pt equiv)
+- Section/table sub-headings: `font-didot text-[11-12px] font-bold uppercase tracking-wider` (Didot Bold Caps, 14 pt equiv)
+- Body / UI text: `text-[13px]` (Avenir Next Regular, 12 pt equiv)
+
+**UI patterns:**
+- Cards: `bg-white border border-lc-border rounded-xl`
+- Inputs/selects: `bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:border-lc-blue`
+- Primary button: `bg-lc-navy text-white hover:bg-[#0d2491]`
+- Secondary button: `text-lc-muted border border-lc-border hover:bg-lc-hover`
+- Modal backdrop: `bg-lc-ink/40 backdrop-blur-sm`; modal shell: `bg-white border border-lc-border` — use the `ModalShell` component inside `TasksView.tsx` as the pattern
+- Sidebar: navy (`bg-lc-navy`), nav active state `bg-white/12`, inactive `text-white/55 hover:bg-white/8`
+
 ### Key Files
 
 - `lib/types.ts` — shared TypeScript types (`Role`, `Team`, `Task`, `Profile`, `UserStats`)

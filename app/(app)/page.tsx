@@ -17,7 +17,6 @@ export default async function DashboardPage() {
 
   const supabase = await createClient()
 
-  // Fetch profiles and tasks in parallel — single round-trip for all dashboard data
   const [profilesResult, tasksResult] = await Promise.all([
     supabase
       .from('profiles')
@@ -43,12 +42,12 @@ export default async function DashboardPage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-8 h-8 rounded-lg bg-blue-600/15 flex items-center justify-center">
-          <LayoutDashboard size={16} className="text-blue-400" />
+        <div className="w-8 h-8 rounded-lg bg-lc-navy/10 flex items-center justify-center">
+          <LayoutDashboard size={16} className="text-lc-navy" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-slate-100 leading-tight">Dashboard</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-medium text-lc-ink leading-tight">Dashboard</h1>
+          <p className="text-[13px] text-lc-faint">
             {currentProfile.full_name} · {currentProfile.role ? ROLE_LABELS[currentProfile.role] : ''}
             {currentProfile.team ? ` · ${TEAM_LABELS[currentProfile.team]}` : ''}
           </p>
@@ -58,43 +57,48 @@ export default async function DashboardPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <SummaryCard
-          icon={<Clock size={16} className="text-slate-400" />}
+          icon={<Clock size={15} className="text-lc-muted" />}
           label="Offen"
           value={totalOpen}
-          color="text-slate-300"
-          bg="bg-slate-800/50"
+          color="text-lc-secondary"
+          bg="bg-white"
         />
         <SummaryCard
-          icon={<AlertCircle size={16} className="text-amber-400" />}
+          icon={<AlertCircle size={15} className="text-amber-500" />}
           label="Zur Prüfung"
           value={totalPending}
-          color="text-amber-300"
-          bg="bg-amber-500/5"
+          color="text-amber-600"
+          bg="bg-amber-50"
+          borderColor="border-amber-100"
         />
         <SummaryCard
-          icon={<CheckCircle size={16} className="text-emerald-400" />}
+          icon={<CheckCircle size={15} className="text-emerald-600" />}
           label="Erledigt"
           value={totalDone}
-          color="text-emerald-300"
-          bg="bg-emerald-500/5"
+          color="text-emerald-700"
+          bg="bg-emerald-50"
+          borderColor="border-emerald-100"
         />
         <SummaryCard
           icon={
-            <span className={`text-base font-bold ${globalRate >= 80 ? 'text-emerald-400' : globalRate >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
+            <span className={`text-sm font-bold ${globalRate >= 80 ? 'text-emerald-600' : globalRate >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
               {globalRate}%
             </span>
           }
           label="Gesamt-Quote"
           value={`${totalDone}/${totalAll}`}
-          color={globalRate >= 80 ? 'text-emerald-300' : globalRate >= 50 ? 'text-amber-300' : 'text-red-300'}
-          bg="bg-blue-500/5"
+          color={globalRate >= 80 ? 'text-emerald-700' : globalRate >= 50 ? 'text-amber-600' : 'text-red-600'}
+          bg="bg-lc-navy/5"
+          borderColor="border-lc-navy/10"
         />
       </div>
 
       {/* Section label */}
       <div className="flex items-center gap-2 mb-3">
-        <h2 className="text-sm font-semibold text-slate-300">Alle Mitglieder</h2>
-        <span className="text-xs text-slate-600">({allProfiles.length})</span>
+        <h2 className="font-didot text-[12px] font-bold text-lc-muted uppercase tracking-wider">
+          Alle Mitglieder
+        </h2>
+        <span className="text-[11px] text-lc-faint">({allProfiles.length})</span>
       </div>
 
       <DashboardTable stats={stats} currentUserId={user.id} />
@@ -108,17 +112,19 @@ function SummaryCard({
   value,
   color,
   bg,
+  borderColor = 'border-lc-border',
 }: {
   icon: React.ReactNode
   label: string
   value: string | number
   color: string
   bg: string
+  borderColor?: string
 }) {
   return (
-    <div className={`${bg} border border-slate-800 rounded-xl p-3.5 space-y-2`}>
+    <div className={`${bg} border ${borderColor} rounded-xl p-3.5 space-y-2`}>
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-500">{label}</span>
+        <span className="text-[11px] text-lc-faint">{label}</span>
         {icon}
       </div>
       <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>

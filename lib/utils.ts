@@ -117,10 +117,10 @@ export function isOverdue(task: Pick<Task, 'status' | 'deadline'>): boolean {
 }
 
 export function getStatusBadgeClass(task: Pick<Task, 'status' | 'deadline'>): string {
-  if (task.status === 'done') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-  if (task.status === 'pending_review') return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-  if (isOverdue(task)) return 'bg-red-500/10 text-red-400 border-red-500/20'
-  return 'bg-slate-700/50 text-slate-400 border-slate-600/30'
+  if (task.status === 'done') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  if (task.status === 'pending_review') return 'bg-amber-50 text-amber-700 border-amber-200'
+  if (isOverdue(task)) return 'bg-red-50 text-red-700 border-red-200'
+  return 'bg-lc-hover text-lc-muted border-lc-border-strong'
 }
 
 export function getStatusLabel(task: Pick<Task, 'status' | 'deadline'>): string {
@@ -131,9 +131,9 @@ export function getStatusLabel(task: Pick<Task, 'status' | 'deadline'>): string 
 }
 
 export function getRateColor(rate: number): string {
-  if (rate >= 80) return 'text-emerald-400'
-  if (rate >= 50) return 'text-amber-400'
-  return 'text-red-400'
+  if (rate >= 80) return 'text-emerald-600'
+  if (rate >= 50) return 'text-amber-600'
+  return 'text-red-600'
 }
 
 export function getRateBarColor(rate: number): string {

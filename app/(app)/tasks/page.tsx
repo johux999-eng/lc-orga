@@ -17,7 +17,6 @@ export default async function TasksPage() {
 
   const supabase = await createClient()
 
-  // Build tasks query based on role
   let tasksQuery = supabase
     .from('tasks')
     .select(
@@ -41,7 +40,6 @@ export default async function TasksPage() {
     tasksQuery = tasksQuery.eq('team', currentProfile.team)
   }
 
-  // Run tasks and profiles (for assignment dropdown) in parallel
   const [tasksResult, profilesResult] = await Promise.all([
     tasksQuery,
     supabase
@@ -60,12 +58,12 @@ export default async function TasksPage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-8 h-8 rounded-lg bg-blue-600/15 flex items-center justify-center">
-          <CheckSquare size={16} className="text-blue-400" />
+        <div className="w-8 h-8 rounded-lg bg-lc-navy/10 flex items-center justify-center">
+          <CheckSquare size={16} className="text-lc-navy" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-slate-100 leading-tight">Tasks</h1>
-          <p className="text-sm text-slate-500">{visibleTasks.length} Tasks insgesamt</p>
+          <h1 className="text-xl font-medium text-lc-ink leading-tight">Tasks</h1>
+          <p className="text-[13px] text-lc-faint">{visibleTasks.length} Tasks insgesamt</p>
         </div>
       </div>
 

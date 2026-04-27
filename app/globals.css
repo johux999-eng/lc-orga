@@ -3,11 +3,12 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background-color: #080a12;
+  background-color: #f8f5f2;
+  color: #202020;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -21,15 +22,23 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2d3e;
+  background: #d4d0cb;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3d52;
+  background: #b8b4af;
 }
 
 /* Focus ring */
 :focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #1e69c4;
   outline-offset: 2px;
+}
+
+/* Sidebar scrollbar override */
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }

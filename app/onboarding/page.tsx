@@ -25,43 +25,41 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080a12] flex items-center justify-center p-4">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-sm">
+    <div className="min-h-screen bg-lc-cream flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-600/30 mb-4">
-            <Scale size={22} className="text-blue-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-lc-navy/20 bg-white mb-5 shadow-sm">
+            <Scale size={22} className="text-lc-navy" strokeWidth={1.5} />
           </div>
-          <h1 className="text-xl font-bold text-slate-100">Willkommen!</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="font-didot text-2xl font-bold text-lc-navy tracking-tight uppercase">
+            Willkommen!
+          </h1>
+          <p className="text-[13px] text-lc-faint mt-1">
             Richte dein Profil ein — einmalig.
           </p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <div className="bg-white border border-lc-border rounded-2xl p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mb-1.5">
-                <User size={12} />
+              <label className="flex items-center gap-1.5 text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">
+                <User size={11} />
                 Vollständiger Name *
               </label>
               <input
                 name="full_name"
                 required
                 placeholder="Max Mustermann"
-                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500/70"
+                className="w-full px-3 py-2.5 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
               />
             </div>
 
             {/* Role */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mb-1.5">
-                <Briefcase size={12} />
+              <label className="flex items-center gap-1.5 text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">
+                <Briefcase size={11} />
                 Rolle *
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -70,8 +68,8 @@ export default function OnboardingPage() {
                     key={r}
                     className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border cursor-pointer transition-all ${
                       role === r
-                        ? 'bg-blue-600/15 border-blue-500/40 text-blue-300'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                        ? 'bg-lc-navy/8 border-lc-navy/30 text-lc-navy'
+                        : 'bg-lc-cream border-lc-border text-lc-muted hover:border-lc-border-strong'
                     }`}
                   >
                     <input
@@ -83,7 +81,7 @@ export default function OnboardingPage() {
                       required
                       className="sr-only"
                     />
-                    <span className="text-sm font-semibold">{ROLE_LABELS[r]}</span>
+                    <span className="text-[13px] font-semibold">{ROLE_LABELS[r]}</span>
                     <span className="text-[10px] text-center leading-tight opacity-70">
                       {r === 'chair' ? 'Gesamtleitung' : r === 'head' ? 'Teamleitung' : 'Organisator'}
                     </span>
@@ -97,15 +95,15 @@ export default function OnboardingPage() {
               <input type="hidden" name="team" value="Chairs" />
             ) : (
               <div>
-                <label className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mb-1.5">
-                  <Users size={12} />
+                <label className="flex items-center gap-1.5 text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">
+                  <Users size={11} />
                   Team *
                 </label>
                 <select
                   name="team"
                   required
                   defaultValue=""
-                  className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-blue-500/70"
+                  className="w-full px-3 py-2.5 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
                 >
                   <option value="" disabled>
                     — Team auswählen —
@@ -120,7 +118,7 @@ export default function OnboardingPage() {
             )}
 
             {error && (
-              <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
+              <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                 {error}
               </p>
             )}
@@ -128,7 +126,7 @@ export default function OnboardingPage() {
             <button
               type="submit"
               disabled={isPending || !role}
-              className="w-full py-2.5 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 transition-colors mt-2"
+              className="w-full py-2.5 rounded-lg text-[13px] font-semibold bg-lc-navy text-white hover:bg-[#0d2491] disabled:opacity-60 transition-colors mt-2"
             >
               {isPending ? 'Speichere…' : 'Profil speichern & loslegen'}
             </button>

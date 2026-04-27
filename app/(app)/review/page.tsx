@@ -54,12 +54,12 @@ export default async function ReviewPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <ClipboardList size={16} className="text-amber-400" />
+          <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
+            <ClipboardList size={16} className="text-amber-600" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-slate-100 leading-tight">Review Queue</h1>
-            <p className="text-sm text-slate-500">
+            <h1 className="text-xl font-medium text-lc-ink leading-tight">Review Queue</h1>
+            <p className="text-[13px] text-lc-faint">
               {currentProfile.role === 'head'
                 ? 'Member-Tasks deines Teams'
                 : 'Alle eingereichten Tasks'}
@@ -67,7 +67,7 @@ export default async function ReviewPage() {
           </div>
         </div>
         {tasks.length > 0 && (
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-[11px] font-bold">
             {tasks.length}
           </span>
         )}
