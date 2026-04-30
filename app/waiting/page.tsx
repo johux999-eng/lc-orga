@@ -23,7 +23,7 @@ export default async function WaitingPage() {
   return (
     <div className="min-h-screen bg-lc-cream flex items-center justify-center p-4">
       <div className="w-full max-w-sm text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-amber-200 bg-amber-50 mb-6">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 mb-6">
           <Clock size={22} className="text-amber-600" strokeWidth={1.5} />
         </div>
 
@@ -38,7 +38,7 @@ export default async function WaitingPage() {
           Bitte warte kurz — du wirst informiert, sobald du loslegen kannst.
         </p>
 
-        <div className="bg-white border border-lc-border rounded-2xl p-5 mb-6 flex items-center gap-3 shadow-sm">
+        <div className="bg-lc-surface border border-lc-border rounded-2xl p-5 mb-6 flex items-center gap-3 shadow-sm">
           <div className="w-8 h-8 rounded-full border border-lc-navy/20 flex items-center justify-center shrink-0">
             <Scale size={14} className="text-lc-navy" strokeWidth={1.5} />
           </div>

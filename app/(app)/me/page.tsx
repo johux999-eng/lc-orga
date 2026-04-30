@@ -69,7 +69,7 @@ export default async function MePage() {
       </div>
 
       {/* Profile card */}
-      <div className="bg-white border border-lc-border rounded-2xl p-5 mb-5">
+      <div className="bg-lc-surface border border-lc-border rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-lc-navy/10 text-lc-navy flex items-center justify-center text-lg font-bold shrink-0">
             {getInitials(currentProfile.full_name)}
@@ -127,7 +127,7 @@ export default async function MePage() {
       </h2>
 
       {myTasks.length === 0 ? (
-        <div className="text-center py-12 text-lc-faint text-[13px] bg-white rounded-xl border border-lc-border">
+        <div className="text-center py-12 text-lc-faint text-[13px] bg-lc-surface rounded-xl border border-lc-border">
           Noch keine Tasks zugewiesen.
         </div>
       ) : (
@@ -135,7 +135,7 @@ export default async function MePage() {
           {myTasks.map((task) => (
             <div
               key={task.id}
-              className="bg-white border border-lc-border rounded-xl px-4 py-3 flex items-center gap-3"
+              className="bg-lc-surface border border-lc-border rounded-xl px-4 py-3 flex items-center gap-3"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-medium text-lc-ink leading-snug truncate">

@@ -32,12 +32,12 @@ export function DashboardTable({ stats, currentUserId }: Props) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Suche nach Name oder Team…"
-          className="w-full pl-9 pr-4 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
+          className="w-full pl-9 pr-4 py-2 bg-lc-surface border border-lc-border rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
         />
       </div>
 
       {/* Table — desktop */}
-      <div className="hidden sm:block overflow-x-auto rounded-xl border border-lc-border bg-white">
+      <div className="hidden sm:block overflow-x-auto rounded-xl border border-lc-border bg-lc-surface">
         <table className="w-full text-[13px]">
           <thead>
             <tr className="border-b border-lc-border bg-lc-cream/60">
@@ -142,7 +142,7 @@ export function DashboardTable({ stats, currentUserId }: Props) {
         {filtered.map(({ profile, open, overdue, pending, done, total, rate }) => (
           <div
             key={profile.id}
-            className={`rounded-xl border p-4 space-y-3 bg-white ${
+            className={`rounded-xl border p-4 space-y-3 bg-lc-surface ${
               profile.id === currentUserId
                 ? 'border-lc-navy/20'
                 : 'border-lc-border'

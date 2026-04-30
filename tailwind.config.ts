@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'media',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -38,17 +39,17 @@ const config: Config = {
       },
       colors: {
         lc: {
-          navy: '#081c74',
-          blue: '#1e69c4',
-          cream: '#f8f5f2',
-          white: '#ffffff',
-          hover: '#f0ede9',
-          border: '#e5e2de',
-          'border-strong': '#d4d0cb',
-          ink: '#202020',
-          secondary: '#363636',
-          muted: '#4a4a4a',
-          faint: '#8a8682',
+          navy:           'rgb(var(--lc-navy) / <alpha-value>)',
+          blue:           'rgb(var(--lc-blue) / <alpha-value>)',
+          cream:          'rgb(var(--lc-cream) / <alpha-value>)',
+          surface:        'rgb(var(--lc-surface) / <alpha-value>)',
+          hover:          'rgb(var(--lc-hover) / <alpha-value>)',
+          border:         'rgb(var(--lc-border) / <alpha-value>)',
+          'border-strong':'rgb(var(--lc-border-strong) / <alpha-value>)',
+          ink:            'rgb(var(--lc-ink) / <alpha-value>)',
+          secondary:      'rgb(var(--lc-secondary) / <alpha-value>)',
+          muted:          'rgb(var(--lc-muted) / <alpha-value>)',
+          faint:          'rgb(var(--lc-faint) / <alpha-value>)',
         },
       },
     },

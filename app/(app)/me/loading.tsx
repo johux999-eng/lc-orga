@@ -8,7 +8,7 @@ export default function MeLoading() {
       </div>
 
       {/* Profile card */}
-      <div className="bg-white border border-lc-border rounded-2xl p-5 mb-5">
+      <div className="bg-lc-surface border border-lc-border rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-lc-border shrink-0" />
           <div className="flex-1 space-y-2">
@@ -34,7 +34,7 @@ export default function MeLoading() {
       <div className="h-4 w-28 bg-lc-border rounded mb-3" />
       <div className="space-y-2">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="bg-white border border-lc-border rounded-xl px-4 py-3 flex items-center gap-3">
+          <div key={i} className="bg-lc-surface border border-lc-border rounded-xl px-4 py-3 flex items-center gap-3">
             <div className="flex-1 space-y-2">
               <div className="h-4 bg-lc-hover rounded w-3/4" />
               <div className="h-3 bg-lc-border/60 rounded w-1/4" />

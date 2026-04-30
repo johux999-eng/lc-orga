@@ -104,7 +104,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
       </aside>
 
       {/* ── Mobile bottom nav ────────────────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur border-t border-lc-border flex items-center justify-around z-40 px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-lc-surface/95 backdrop-blur border-t border-lc-border flex items-center justify-around z-40 px-2">
         {items.map((item) => {
           const active = pathname === item.href
           return (

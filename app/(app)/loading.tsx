@@ -13,7 +13,7 @@ export default function DashboardLoading() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white border border-lc-border rounded-xl p-3.5 space-y-3">
+          <div key={i} className="bg-lc-surface border border-lc-border rounded-xl p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="h-3 w-14 bg-lc-border rounded" />
               <div className="h-4 w-4 bg-lc-border rounded" />
@@ -27,7 +27,7 @@ export default function DashboardLoading() {
       <div className="h-9 bg-lc-hover rounded-lg mb-3" />
 
       {/* Table rows */}
-      <div className="rounded-xl border border-lc-border overflow-hidden bg-white">
+      <div className="rounded-xl border border-lc-border overflow-hidden bg-lc-surface">
         <div className="h-10 bg-lc-cream border-b border-lc-border" />
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-lc-border/60 last:border-0">

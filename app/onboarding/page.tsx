@@ -29,7 +29,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-lc-navy/20 bg-white mb-5 shadow-sm">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-lc-navy/20 bg-lc-surface mb-5 shadow-sm">
             <Scale size={22} className="text-lc-navy" strokeWidth={1.5} />
           </div>
           <h1 className="font-didot text-2xl font-bold text-lc-navy tracking-tight uppercase">
@@ -40,7 +40,7 @@ export default function OnboardingPage() {
           </p>
         </div>
 
-        <div className="bg-white border border-lc-border rounded-2xl p-6 shadow-sm">
+        <div className="bg-lc-surface border border-lc-border rounded-2xl p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
@@ -118,7 +118,7 @@ export default function OnboardingPage() {
             )}
 
             {error && (
-              <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
                 {error}
               </p>
             )}

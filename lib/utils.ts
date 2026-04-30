@@ -117,9 +117,9 @@ export function isOverdue(task: Pick<Task, 'status' | 'deadline'>): boolean {
 }
 
 export function getStatusBadgeClass(task: Pick<Task, 'status' | 'deadline'>): string {
-  if (task.status === 'done') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-  if (task.status === 'pending_review') return 'bg-amber-50 text-amber-700 border-amber-200'
-  if (isOverdue(task)) return 'bg-red-50 text-red-700 border-red-200'
+  if (task.status === 'done') return 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900'
+  if (task.status === 'pending_review') return 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900'
+  if (isOverdue(task)) return 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900'
   return 'bg-lc-hover text-lc-muted border-lc-border-strong'
 }
 

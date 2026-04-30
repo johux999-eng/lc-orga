@@ -123,21 +123,24 @@ A `public.is_in_group(group_name text)` SECURITY DEFINER function is needed for 
 
 ### Design System
 
-Light-mode, law-congress aesthetic. Never use dark Tailwind slate classes.
+Law-congress aesthetic. Never use dark Tailwind slate classes.
 
-**Tailwind tokens** (`lc-*` — defined in `tailwind.config.ts`):
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `lc-navy` | `#081c74` | Sidebar bg, primary buttons, icon accents |
-| `lc-blue` | `#1e69c4` | Focus rings, interactive highlights |
-| `lc-cream` | `#f8f5f2` | Page background, input backgrounds |
-| `lc-ink` | `#202020` | Primary text |
-| `lc-secondary` | `#363636` | Secondary text |
-| `lc-muted` | `#4a4a4a` | Muted text, labels |
-| `lc-faint` | `#8a8682` | Placeholder, timestamps |
-| `lc-border` | `#e5e2de` | Default borders |
-| `lc-border-strong` | `#d4d0cb` | Input borders |
-| `lc-hover` | `#f0ede9` | Hover backgrounds |
+All `lc-*` tokens are CSS-variable-driven (`app/globals.css`). Dark mode activates automatically via `@media (prefers-color-scheme: dark)` — no JS, no manual toggle. `tailwind.config.ts` uses `darkMode: 'media'` and `rgb(var(--lc-*) / <alpha-value>)` so opacity modifiers (e.g. `bg-lc-navy/10`) keep working.
+
+**Tailwind tokens** (`lc-*` — defined in `tailwind.config.ts`, channel values in `globals.css`):
+| Token | Light | Dark | Usage |
+|-------|-------|------|-------|
+| `lc-navy` | `#081c74` | same | Sidebar bg, primary buttons, icon accents |
+| `lc-blue` | `#1e69c4` | same | Focus rings, interactive highlights |
+| `lc-cream` | `#f8f5f2` | `#0f1117` | Page background |
+| `lc-surface` | `#ffffff` | `#181c27` | Card/table/modal surfaces — use instead of `bg-white` |
+| `lc-hover` | `#f0ede9` | `#1d2133` | Hover backgrounds |
+| `lc-border` | `#e5e2de` | `#272d44` | Default borders |
+| `lc-border-strong` | `#d4d0cb` | `#343b55` | Input borders |
+| `lc-ink` | `#202020` | `#e6e2dc` | Primary text |
+| `lc-secondary` | `#363636` | `#bbb6af` | Secondary text |
+| `lc-muted` | `#4a4a4a` | `#878380` | Muted text, labels |
+| `lc-faint` | `#8a8682` | `#58554f` | Placeholder, timestamps |
 
 **Fonts:**
 - `font-sans` / `font-avenir` → `'Avenir Next', 'Avenir', -apple-system, …` (system font; no import needed)
@@ -149,14 +152,16 @@ Light-mode, law-congress aesthetic. Never use dark Tailwind slate classes.
 - Body / UI text: `text-[13px]` (Avenir Next Regular, 12 pt equiv)
 
 **UI patterns:**
-- Cards: `bg-white border border-lc-border rounded-xl`
+- Cards: `bg-lc-surface border border-lc-border rounded-xl` — always use `bg-lc-surface`, never `bg-white`
 - Inputs/selects: `bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:border-lc-blue`
 - Primary button: `bg-lc-navy text-white hover:bg-[#0d2491]`
 - Secondary button: `text-lc-muted border border-lc-border hover:bg-lc-hover`
-- Modal backdrop: `bg-lc-ink/40 backdrop-blur-sm`; modal shell: `bg-white border border-lc-border` — use the `ModalShell` component inside `TasksView.tsx` as the pattern
-- Sidebar: navy (`bg-lc-navy`), nav active state `bg-white/12`, inactive `text-white/55 hover:bg-white/8`
+- Modal backdrop: `bg-lc-ink/40 backdrop-blur-sm`; modal shell: `bg-lc-surface border border-lc-border` — use the `ModalShell` component inside `TasksView.tsx` as the pattern
+- Sidebar: navy (`bg-lc-navy`), nav active state `bg-white/12`, inactive `text-white/55 hover:bg-white/8` — these white-on-navy overlays are intentional and stay in both modes
 - Mobile task cards use `line-clamp-2` for description/proof_url with a `ChevronDown`/`ChevronUp` expand toggle shown when text exceeds ~80 characters
-- Loading skeletons (`app/**/loading.tsx`): use `animate-pulse` with `lc-*` tokens — `bg-lc-border` / `bg-lc-hover` for skeleton shapes, `bg-white border border-lc-border` for card shells, `bg-lc-cream` for table headers. Never use dark `slate-*` classes in loading screens.
+- Loading skeletons (`app/**/loading.tsx`): `animate-pulse` with `bg-lc-border` / `bg-lc-hover` for shapes, `bg-lc-surface border border-lc-border` for card shells, `bg-lc-cream` for table headers
+
+**Semantic colors (emerald / amber / red) need explicit `dark:` variants** — they are not part of the CSS variable system. Pattern: `bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900`. Same pattern applies to amber and red. `getStatusBadgeClass` in `lib/utils.ts` already includes these.
 
 ### StatusBadge
 

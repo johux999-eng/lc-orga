@@ -31,8 +31,8 @@ export function AdminView({ pending }: { pending: Profile[] }) {
   if (pending.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mb-4">
-          <CheckCircle size={24} className="text-emerald-600" />
+        <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-900 flex items-center justify-center mb-4">
+          <CheckCircle size={24} className="text-emerald-600 dark:text-emerald-400" />
         </div>
         <p className="text-lc-secondary font-medium">Keine ausstehenden Freischaltungen</p>
         <p className="text-lc-faint text-[13px] mt-1">Alle Mitglieder sind freigeschaltet.</p>
@@ -48,7 +48,7 @@ export function AdminView({ pending }: { pending: Profile[] }) {
       {pending.map((profile) => (
         <div
           key={profile.id}
-          className="bg-white border border-lc-border rounded-xl px-4 py-3 flex items-center gap-3"
+          className="bg-lc-surface border border-lc-border rounded-xl px-4 py-3 flex items-center gap-3"
         >
           <div className="w-9 h-9 rounded-full bg-lc-navy/10 flex items-center justify-center text-[11px] font-semibold text-lc-navy shrink-0">
             {getInitials(profile.full_name)}
@@ -69,7 +69,7 @@ export function AdminView({ pending }: { pending: Profile[] }) {
             <button
               onClick={() => handleApprove(profile.id)}
               disabled={isPending && approvingId === profile.id}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-900 disabled:opacity-50 transition-colors"
             >
               <CheckCircle size={12} />
               {approvingId === profile.id ? 'Freischalten…' : 'Freischalten'}

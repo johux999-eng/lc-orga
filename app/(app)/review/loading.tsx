@@ -13,7 +13,7 @@ export default function ReviewLoading() {
       {/* Task cards */}
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white border border-lc-border rounded-xl p-4 space-y-3">
+          <div key={i} className="bg-lc-surface border border-lc-border rounded-xl p-4 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 space-y-2">
                 <div className="h-4 bg-lc-hover rounded w-2/3" />

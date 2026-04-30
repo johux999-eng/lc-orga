@@ -2,13 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
+
+  /* Light mode (default) */
+  --lc-navy:          8 28 116;
+  --lc-blue:          30 105 196;
+  --lc-cream:         248 245 242;
+  --lc-surface:       255 255 255;
+  --lc-hover:         240 237 233;
+  --lc-border:        229 226 222;
+  --lc-border-strong: 212 208 203;
+  --lc-ink:           32 32 32;
+  --lc-secondary:     54 54 54;
+  --lc-muted:         74 74 74;
+  --lc-faint:         138 134 130;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --lc-cream:         15 17 23;
+    --lc-surface:       24 28 39;
+    --lc-hover:         29 33 51;
+    --lc-border:        39 45 68;
+    --lc-border-strong: 52 59 85;
+    --lc-ink:           230 226 220;
+    --lc-secondary:     187 182 175;
+    --lc-muted:         135 131 128;
+    --lc-faint:         88 85 79;
+  }
 }
 
 body {
-  background-color: #f8f5f2;
-  color: #202020;
+  background-color: rgb(var(--lc-cream));
+  color: rgb(var(--lc-ink));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -22,16 +50,16 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4d0cb;
+  background: rgb(var(--lc-border-strong));
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8b4af;
+  background: rgb(var(--lc-muted));
 }
 
 /* Focus ring */
 :focus-visible {
-  outline: 2px solid #1e69c4;
+  outline: 2px solid rgb(var(--lc-blue));
   outline-offset: 2px;
 }
 

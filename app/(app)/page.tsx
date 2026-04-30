@@ -61,23 +61,23 @@ export default async function DashboardPage() {
           label="Offen"
           value={totalOpen}
           color="text-lc-secondary"
-          bg="bg-white"
+          bg="bg-lc-surface"
         />
         <SummaryCard
           icon={<AlertCircle size={15} className="text-amber-500" />}
           label="Zur Prüfung"
           value={totalPending}
           color="text-amber-600"
-          bg="bg-amber-50"
-          borderColor="border-amber-100"
+          bg="bg-amber-50 dark:bg-amber-950"
+          borderColor="border-amber-100 dark:border-amber-900"
         />
         <SummaryCard
           icon={<CheckCircle size={15} className="text-emerald-600" />}
           label="Erledigt"
           value={totalDone}
-          color="text-emerald-700"
-          bg="bg-emerald-50"
-          borderColor="border-emerald-100"
+          color="text-emerald-700 dark:text-emerald-400"
+          bg="bg-emerald-50 dark:bg-emerald-950"
+          borderColor="border-emerald-100 dark:border-emerald-900"
         />
         <SummaryCard
           icon={

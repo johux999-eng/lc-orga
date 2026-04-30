@@ -32,7 +32,7 @@ function RejectModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-lc-ink/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl border border-lc-border shadow-xl">
+      <div className="relative w-full sm:max-w-md bg-lc-surface rounded-t-2xl sm:rounded-2xl border border-lc-border shadow-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-lc-border">
           <h2 className="text-[15px] font-semibold text-lc-ink">Task zurückweisen</h2>
           <button onClick={onClose} className="text-lc-faint hover:text-lc-ink text-xl">×</button>
@@ -45,7 +45,7 @@ function RejectModal({
             </p>
           </div>
           {error && (
-            <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
               {error}
             </p>
           )}
@@ -101,8 +101,8 @@ export function ReviewView({ tasks, currentProfile }: Props) {
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mb-4">
-          <CheckCircle size={24} className="text-emerald-600" />
+        <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-900 flex items-center justify-center mb-4">
+          <CheckCircle size={24} className="text-emerald-600 dark:text-emerald-400" />
         </div>
         <p className="text-lc-secondary font-medium">Keine offenen Reviews</p>
         <p className="text-lc-faint text-[13px] mt-1">Alle Tasks sind genehmigt.</p>
@@ -116,7 +116,7 @@ export function ReviewView({ tasks, currentProfile }: Props) {
         {tasks.map((task) => (
           <div
             key={task.id}
-            className="bg-white border border-lc-border rounded-xl p-4 sm:p-5"
+            className="bg-lc-surface border border-lc-border rounded-xl p-4 sm:p-5"
           >
             <div className="flex flex-col sm:flex-row sm:items-start gap-3">
               <div className="flex-1 min-w-0 space-y-1.5">
@@ -156,7 +156,7 @@ export function ReviewView({ tasks, currentProfile }: Props) {
                 <button
                   onClick={() => setRejectTask(task)}
                   disabled={isPending && approvingId === task.id}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 hover:bg-red-100 dark:hover:bg-red-900 disabled:opacity-50 transition-colors"
                 >
                   <XCircle size={14} />
                   Ablehnen
@@ -164,7 +164,7 @@ export function ReviewView({ tasks, currentProfile }: Props) {
                 <button
                   onClick={() => handleApprove(task)}
                   disabled={isPending && approvingId === task.id}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium text-emerald-700 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900 disabled:opacity-50 transition-colors"
                 >
                   <CheckCircle size={14} />
                   {approvingId === task.id ? 'Lädt…' : 'Genehmigen'}

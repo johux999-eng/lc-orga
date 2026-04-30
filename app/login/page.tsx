@@ -34,7 +34,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-lc-navy/20 bg-white mb-5 shadow-sm">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-lc-navy/20 bg-lc-surface mb-5 shadow-sm">
             <Scale size={22} className="text-lc-navy" strokeWidth={1.5} />
           </div>
           <h1 className="font-didot text-2xl font-bold text-lc-navy tracking-tight uppercase">
@@ -46,7 +46,7 @@ export default function LoginPage() {
         </div>
 
         {!sent ? (
-          <div className="bg-white border border-lc-border rounded-2xl p-6 shadow-sm">
+          <div className="bg-lc-surface border border-lc-border rounded-2xl p-6 shadow-sm">
             <h2 className="text-[15px] font-semibold text-lc-ink mb-1">Anmelden</h2>
             <p className="text-[13px] text-lc-faint mb-5">
               Gib deine E-Mail ein — wir schicken dir einen Magic Link.
@@ -64,7 +64,7 @@ export default function LoginPage() {
                 />
               </div>
               {error && (
-                <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
                   {error}
                 </p>
               )}
@@ -85,9 +85,9 @@ export default function LoginPage() {
             </form>
           </div>
         ) : (
-          <div className="bg-white border border-emerald-200 rounded-2xl p-6 shadow-sm text-center">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 mb-4">
-              <CheckCircle size={20} className="text-emerald-600" />
+          <div className="bg-lc-surface border border-emerald-200 dark:border-emerald-900 rounded-2xl p-6 shadow-sm text-center">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-900 mb-4">
+              <CheckCircle size={20} className="text-emerald-600 dark:text-emerald-400" />
             </div>
             <h2 className="text-[15px] font-semibold text-lc-ink mb-2">Check deine Mails!</h2>
             <p className="text-[13px] text-lc-muted leading-relaxed">

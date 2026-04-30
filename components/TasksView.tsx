@@ -40,7 +40,7 @@ function ModalShell({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-lc-ink/40 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative w-full ${maxW} bg-white rounded-t-2xl sm:rounded-2xl border border-lc-border shadow-xl`}>
+      <div className={`relative w-full ${maxW} bg-lc-surface rounded-t-2xl sm:rounded-2xl border border-lc-border shadow-xl`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-lc-border">
           <h2 className="text-[15px] font-semibold text-lc-ink">{title}</h2>
           <button onClick={onClose} className="text-lc-faint hover:text-lc-ink transition-colors text-xl leading-none">
@@ -105,7 +105,7 @@ function EditTaskModal({ task, onClose }: { task: Task; onClose: () => void }) {
           />
         </div>
         {error && (
-          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">{error}</p>
         )}
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors">
@@ -149,7 +149,7 @@ function DeleteModal({ task, onClose }: { task: Task; onClose: () => void }) {
         </div>
         <p className="text-[13px] text-lc-muted">Dieser Task wird unwiderruflich gelöscht.</p>
         {error && (
-          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">{error}</p>
         )}
         <div className="flex gap-2">
           <button onClick={onClose} className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors">
@@ -290,7 +290,7 @@ function ReassignModal({
           )}
         </div>
         {error && (
-          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">{error}</p>
         )}
         <div className="flex gap-2">
           <button onClick={onClose} className="flex-1 py-2 rounded-lg text-[13px] font-medium text-lc-muted border border-lc-border hover:bg-lc-hover transition-colors">
@@ -501,7 +501,7 @@ function CreateTaskModal({
         )}
 
         {error && (
-          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
@@ -569,7 +569,7 @@ function SubmitModal({ task, onClose }: { task: Task; onClose: () => void }) {
           <p className="text-[11px] text-lc-faint text-right mt-1">{proofUrl.length}/500</p>
         </div>
         {error && (
-          <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
@@ -648,14 +648,14 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Suche…"
-            className="w-full pl-9 pr-4 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
+            className="w-full pl-9 pr-4 py-2 bg-lc-surface border border-lc-border rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as TaskStatus | 'all')}
-            className="px-3 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-secondary focus:outline-none focus:border-lc-blue transition-colors"
+            className="px-3 py-2 bg-lc-surface border border-lc-border rounded-lg text-[13px] text-lc-secondary focus:outline-none focus:border-lc-blue transition-colors"
           >
             <option value="all">Alle Status</option>
             {(Object.keys(STATUS_LABELS) as TaskStatus[]).map((s) => (
@@ -669,7 +669,7 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
             <select
               value={filterTeam}
               onChange={(e) => setFilterTeam(e.target.value as Team | 'all')}
-              className="px-3 py-2 bg-white border border-lc-border rounded-lg text-[13px] text-lc-secondary focus:outline-none focus:border-lc-blue transition-colors"
+              className="px-3 py-2 bg-lc-surface border border-lc-border rounded-lg text-[13px] text-lc-secondary focus:outline-none focus:border-lc-blue transition-colors"
             >
               <option value="all">Alle Teams</option>
               {TEAMS.map((t) => (
@@ -685,7 +685,7 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
             className={`px-3 py-2 rounded-lg text-[13px] font-medium border transition-colors ${
               filterMine
                 ? 'bg-lc-navy/10 text-lc-navy border-lc-navy/25'
-                : 'bg-white text-lc-muted border-lc-border hover:text-lc-ink hover:border-lc-border-strong'
+                : 'bg-lc-surface text-lc-muted border-lc-border hover:text-lc-ink hover:border-lc-border-strong'
             }`}
           >
             Meine Tasks
@@ -704,7 +704,7 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
       </div>
 
       {/* Tasks — desktop table */}
-      <div className="hidden sm:block overflow-x-auto rounded-xl border border-lc-border bg-white">
+      <div className="hidden sm:block overflow-x-auto rounded-xl border border-lc-border bg-lc-surface">
         <table className="w-full text-[13px]">
           <thead>
             <tr className="border-b border-lc-border bg-lc-cream/60">
@@ -901,7 +901,7 @@ function TaskTableRow({
                 onClick={handleApprove}
                 disabled={isPending}
                 title="Genehmigen"
-                className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950 disabled:opacity-50 transition-colors"
               >
                 <CheckCircle size={14} />
               </button>
@@ -909,7 +909,7 @@ function TaskTableRow({
                 onClick={handleReject}
                 disabled={isPending}
                 title="Zurückweisen"
-                className="p-1.5 rounded-md text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50 transition-colors"
               >
                 <XCircle size={14} />
               </button>
@@ -934,7 +934,7 @@ function TaskTableRow({
               <button
                 onClick={onDelete}
                 title="Löschen"
-                className="p-1.5 rounded-md text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                className="p-1.5 rounded-md text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               >
                 <Trash2 size={14} />
               </button>
@@ -997,7 +997,7 @@ function TaskCard({
   const proofLong = (task.proof_url?.length ?? 0) > 80
 
   return (
-    <div className="bg-white border border-lc-border rounded-xl p-4 space-y-2">
+    <div className="bg-lc-surface border border-lc-border rounded-xl p-4 space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="font-medium text-lc-ink leading-snug">{task.title}</p>
@@ -1058,14 +1058,14 @@ function TaskCard({
               <button
                 onClick={handleApprove}
                 disabled={isPending}
-                className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950 disabled:opacity-50 transition-colors"
               >
                 <CheckCircle size={14} />
               </button>
               <button
                 onClick={handleReject}
                 disabled={isPending}
-                className="p-1.5 rounded-md text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-md text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50 transition-colors"
               >
                 <XCircle size={14} />
               </button>
