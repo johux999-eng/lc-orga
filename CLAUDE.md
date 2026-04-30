@@ -7,15 +7,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev      # Start dev server
 npm run build    # Production build
-npm run lint     # ESLint (first run prompts for config — not yet set up)
+npm run lint     # ESLint
 npx tsc --noEmit # Type-check without emitting
 ```
 
-No test suite is configured.
+No test suite is configured. ESLint config is not yet set up (`npm run lint` will prompt for it on first run).
 
 ## Architecture
 
 Next.js 14 App Router + Supabase + Tailwind. All data fetching happens server-side in page components; mutations go through Server Actions in `lib/actions.ts`.
+
+### Supabase Client Instances
+
+Two separate Supabase clients — never mix them up:
+- `lib/supabase/server.ts` — reads cookies, used in Server Components, Server Actions, and `middleware.ts`
+- `lib/supabase/client.ts` — browser singleton, used only inside `'use client'` components (currently not needed since all data fetching is server-side)
 
 ### Auth & Access Control
 
@@ -44,6 +50,8 @@ All page components export `revalidate = 0` to force dynamic rendering (no stale
 Two core tables in Supabase:
 - **`profiles`** — one row per auth user: `id, full_name, role, team, approved`
 - **`tasks`** — `id, title, description, assigned_to (uuid|null), co_assignees (uuid[]), assigned_group (text|null), team, status, deadline, proof_url, created_by, submitted_at, submitted_by, reviewed_by, completed_at`
+
+The 6 valid teams: `Sponsoring`, `Speaker`, `Public Relations`, `Technik/Mobility`, `Event`, `Chairs`.
 
 Task assignment is either to individual person(s) (`assigned_to` + `co_assignees`) or to a named group (`assigned_group`). The 13 group identifiers are defined in `lib/utils.ts` (`ASSIGNEE_GROUPS`, `GROUP_CRITERIA`). `isProfileInGroup()` is the single source of truth for group membership. `GROUP_CRITERIA` is not exported — never bypass `isProfileInGroup`.
 
@@ -148,16 +156,25 @@ Light-mode, law-congress aesthetic. Never use dark Tailwind slate classes.
 - Modal backdrop: `bg-lc-ink/40 backdrop-blur-sm`; modal shell: `bg-white border border-lc-border` — use the `ModalShell` component inside `TasksView.tsx` as the pattern
 - Sidebar: navy (`bg-lc-navy`), nav active state `bg-white/12`, inactive `text-white/55 hover:bg-white/8`
 - Mobile task cards use `line-clamp-2` for description/proof_url with a `ChevronDown`/`ChevronUp` expand toggle shown when text exceeds ~80 characters
+- Loading skeletons (`app/**/loading.tsx`): use `animate-pulse` with `lc-*` tokens — `bg-lc-border` / `bg-lc-hover` for skeleton shapes, `bg-white border border-lc-border` for card shells, `bg-lc-cream` for table headers. Never use dark `slate-*` classes in loading screens.
+
+### StatusBadge
+
+`components/StatusBadge.tsx` renders a colored pill via `getStatusBadgeClass` / `getStatusLabel` from `lib/utils.ts`. There are four visual states (not three): `done` (emerald), `pending_review` (amber), overdue (red — `open` task past deadline), and `open` (neutral lc-hover). The overdue state is derived at render time from `task.deadline`, not stored in the DB.
 
 ### Key Files
 
 - `lib/types.ts` — shared TypeScript types (`Role`, `Team`, `Task`, `Profile`, `UserStats`)
-- `lib/utils.ts` — group definitions, `isProfileInGroup`, `isTaskVisibleForProfile`, `computeStats`, formatting helpers
+- `lib/utils.ts` — group definitions, `isProfileInGroup`, `isTaskVisibleForProfile`, `computeStats`, `getStatusBadgeClass`, `getInitials`, formatting helpers
 - `lib/auth.ts` — `getAuthUser` / `getCurrentProfile` with React.cache deduplication
 - `lib/actions.ts` — all Server Actions (auth, CRUD for tasks, approval/rejection, user management)
+- `components/AppShell.tsx` — server component wrapping all authenticated pages; redirects to `/login` or `/onboarding` if session/profile missing
+- `components/Sidebar.tsx` — nav sidebar; receives `profile` from `AppShell`
 - `components/TasksView.tsx` — full tasks UI including Create/Edit/Delete/Reassign/Submit modals and inline approve/reject buttons; `ModalShell` is the shared modal wrapper pattern
 - `components/ReviewView.tsx` — review queue UI (head sees member tasks; chair sees all pending)
+- `components/AdminView.tsx` — new-member approval UI (chair only)
 - `components/DashboardTable.tsx` — per-member stats table used on the dashboard
+- `app/auth/callback/` — exchanges Supabase OTP code for session, then redirects to `/`
 - `app/(app)/review/page.tsx` — server-side filtering of pending tasks per role before passing to ReviewView
 - `app/(app)/me/page.tsx` — personal stats and task list; applies `isTaskVisibleForProfile` filter before computing stats
 - `app/(app)/admin/page.tsx` — chair-only page; fetches unapproved profiles and passes to `AdminView`

@@ -184,6 +184,7 @@ function ReassignModal({
     task.assigned_to ? [task.assigned_to, ...(task.co_assignees ?? [])] : (task.co_assignees ?? [])
   )
   const [selectedGroup, setSelectedGroup] = useState(task.assigned_group ?? '')
+  const [personSearch, setPersonSearch] = useState('')
 
   function togglePerson(id: string) {
     setSelectedPersonIds((prev) =>
@@ -244,24 +245,37 @@ function ReassignModal({
             </button>
           </div>
           {assignMode === 'persons' ? (
-            <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
-              {profiles.map((p) => (
-                <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedPersonIds.includes(p.id)}
-                    onChange={() => togglePerson(p.id)}
-                    className="accent-lc-navy"
-                  />
-                  <span className="text-[13px] text-lc-ink">
-                    {p.full_name}
-                    <span className="text-[11px] text-lc-faint ml-1">
-                      ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
-                    </span>
-                  </span>
-                </label>
-              ))}
-            </div>
+            <>
+              <div className="relative mb-2">
+                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-lc-faint" />
+                <input
+                  value={personSearch}
+                  onChange={(e) => setPersonSearch(e.target.value)}
+                  placeholder="Person suchen…"
+                  className="w-full pl-8 pr-3 py-1.5 bg-lc-cream border border-lc-border-strong rounded-lg text-[12px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
+                />
+              </div>
+              <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
+                {profiles
+                  .filter((p) => p.full_name?.toLowerCase().includes(personSearch.toLowerCase()))
+                  .map((p) => (
+                    <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedPersonIds.includes(p.id)}
+                        onChange={() => togglePerson(p.id)}
+                        className="accent-lc-navy"
+                      />
+                      <span className="text-[13px] text-lc-ink">
+                        {p.full_name}
+                        <span className="text-[11px] text-lc-faint ml-1">
+                          ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+              </div>
+            </>
           ) : (
             <select
               value={selectedGroup}
@@ -310,6 +324,7 @@ function CreateTaskModal({
   const [error, setError] = useState<string | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<Team | ''>(currentProfile.team ?? '')
   const [assignMode, setAssignMode] = useState<'persons' | 'group'>('persons')
+  const [personSearch, setPersonSearch] = useState('')
 
   const isMember = currentProfile.role === 'member'
   const isHead = currentProfile.role === 'head'
@@ -440,24 +455,37 @@ function CreateTaskModal({
             </div>
             <input type="hidden" name="assign_mode" value={assignMode} />
             {assignMode === 'persons' ? (
-              <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
-                {assignableProfiles.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="assigned_to"
-                      value={p.id}
-                      className="accent-lc-navy"
-                    />
-                    <span className="text-[13px] text-lc-ink">
-                      {p.full_name}
-                      <span className="text-[11px] text-lc-faint ml-1">
-                        ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
-                      </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <>
+                <div className="relative mb-2">
+                  <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-lc-faint" />
+                  <input
+                    value={personSearch}
+                    onChange={(e) => setPersonSearch(e.target.value)}
+                    placeholder="Person suchen…"
+                    className="w-full pl-8 pr-3 py-1.5 bg-lc-cream border border-lc-border-strong rounded-lg text-[12px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors"
+                  />
+                </div>
+                <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
+                  {assignableProfiles
+                    .filter((p) => p.full_name?.toLowerCase().includes(personSearch.toLowerCase()))
+                    .map((p) => (
+                      <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="assigned_to"
+                          value={p.id}
+                          className="accent-lc-navy"
+                        />
+                        <span className="text-[13px] text-lc-ink">
+                          {p.full_name}
+                          <span className="text-[11px] text-lc-faint ml-1">
+                            ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                </div>
+              </>
             ) : (
               <select
                 name="assigned_group"
