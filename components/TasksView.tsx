@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Search, Pencil, Trash2, UserCheck, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, UserCheck, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Task, Profile, TaskStatus, Team } from '@/lib/types'
 import {
   TEAM_LABELS,
@@ -308,37 +308,42 @@ function CreateTaskModal({
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [selectedTeam, setSelectedTeam] = useState<Team | ''>(
-    currentProfile.role === 'head' ? (currentProfile.team ?? '') : ''
-  )
+  const [selectedTeam, setSelectedTeam] = useState<Team | ''>(currentProfile.team ?? '')
   const [assignMode, setAssignMode] = useState<'persons' | 'group'>('persons')
 
-  const assignableProfiles = profiles.filter((p) => {
-    if (currentProfile.role === 'head') return p.team === currentProfile.team
-    return true
-  })
+  const isMember = currentProfile.role === 'member'
+  const isHead = currentProfile.role === 'head'
+
+  // Heads now see all profiles; chairs too; members don't pick assignees
+  const assignableProfiles = isMember ? [] : profiles
 
   const availableGroups = ASSIGNEE_GROUPS.filter((g) => {
-    if (currentProfile.role === 'head') {
-      return isProfileInGroup(g, { role: 'member', team: currentProfile.team })
+    if (isHead) {
+      if (g.startsWith('heads_')) {
+        // Only own specific head group, not heads_all or other teams
+        return g !== 'heads_all' && isProfileInGroup(g, { role: 'head', team: currentProfile.team })
+      }
+      return true // all member groups
     }
-    return true
+    return true // chairs see all groups
   })
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     const formData = new FormData(e.currentTarget)
-    if (assignMode === 'persons') {
-      const assignees = formData.getAll('assigned_to')
-      if (!assignees.length) {
-        setError('Bitte mindestens eine Person auswählen')
-        return
-      }
-    } else {
-      if (!formData.get('assigned_group')) {
-        setError('Bitte eine Gruppe auswählen')
-        return
+    if (!isMember) {
+      if (assignMode === 'persons') {
+        const assignees = formData.getAll('assigned_to')
+        if (!assignees.length) {
+          setError('Bitte mindestens eine Person auswählen')
+          return
+        }
+      } else {
+        if (!formData.get('assigned_group')) {
+          setError('Bitte eine Gruppe auswählen')
+          return
+        }
       }
     }
     startTransition(async () => {
@@ -354,6 +359,13 @@ function CreateTaskModal({
   return (
     <ModalShell title="Neuen Task erstellen" onClose={onClose}>
       <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        {isMember && (
+          <div className="bg-lc-navy/5 border border-lc-navy/15 rounded-lg px-3 py-2.5">
+            <p className="text-[12px] text-lc-navy leading-relaxed">
+              Dieser Task wird dir selbst zugewiesen. Ein Head deines Teams muss ihn genehmigen, bevor er als erledigt gilt.
+            </p>
+          </div>
+        )}
         <div>
           <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Titel *</label>
           <input
@@ -372,17 +384,10 @@ function CreateTaskModal({
             className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue resize-none transition-colors"
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Team *</label>
-            {currentProfile.role === 'head' ? (
-              <>
-                <input type="hidden" name="team" value={currentProfile.team ?? ''} />
-                <div className="w-full px-3 py-2 bg-lc-hover border border-lc-border rounded-lg text-[13px] text-lc-muted">
-                  {currentProfile.team ? TEAM_LABELS[currentProfile.team] : '—'}
-                </div>
-              </>
-            ) : (
+        <div className={isMember ? '' : 'grid grid-cols-2 gap-3'}>
+          {!isMember && (
+            <div>
+              <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Team *</label>
               <select
                 name="team"
                 required
@@ -397,8 +402,8 @@ function CreateTaskModal({
                   </option>
                 ))}
               </select>
-            )}
-          </div>
+            </div>
+          )}
           <div>
             <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Fällig am *</label>
             <input
@@ -409,60 +414,64 @@ function CreateTaskModal({
             />
           </div>
         </div>
-        <div>
-          <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Zuweisen an *</label>
-          <div className="flex gap-1 mb-2 p-0.5 bg-lc-cream rounded-lg border border-lc-border">
-            <button
-              type="button"
-              onClick={() => setAssignMode('persons')}
-              className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
-                assignMode === 'persons' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
-              }`}
-            >
-              Person(en)
-            </button>
-            <button
-              type="button"
-              onClick={() => setAssignMode('group')}
-              className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
-                assignMode === 'group' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
-              }`}
-            >
-              Gruppe
-            </button>
-          </div>
-          <input type="hidden" name="assign_mode" value={assignMode} />
-          {assignMode === 'persons' ? (
-            <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
-              {assignableProfiles.map((p) => (
-                <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="assigned_to"
-                    value={p.id}
-                    className="accent-lc-navy"
-                  />
-                  <span className="text-[13px] text-lc-ink">
-                    {p.full_name}
-                    <span className="text-[11px] text-lc-faint ml-1">
-                      ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
-                    </span>
-                  </span>
-                </label>
-              ))}
+
+        {!isMember && (
+          <div>
+            <label className="block text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">Zuweisen an *</label>
+            <div className="flex gap-1 mb-2 p-0.5 bg-lc-cream rounded-lg border border-lc-border">
+              <button
+                type="button"
+                onClick={() => setAssignMode('persons')}
+                className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
+                  assignMode === 'persons' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
+                }`}
+              >
+                Person(en)
+              </button>
+              <button
+                type="button"
+                onClick={() => setAssignMode('group')}
+                className={`flex-1 py-1 text-[12px] font-medium rounded-md transition-colors ${
+                  assignMode === 'group' ? 'bg-lc-navy text-white' : 'text-lc-muted hover:text-lc-ink'
+                }`}
+              >
+                Gruppe
+              </button>
             </div>
-          ) : (
-            <select
-              name="assigned_group"
-              className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
-            >
-              <option value="">— Gruppe wählen —</option>
-              {availableGroups.map((g) => (
-                <option key={g} value={g}>{GROUP_LABELS[g]}</option>
-              ))}
-            </select>
-          )}
-        </div>
+            <input type="hidden" name="assign_mode" value={assignMode} />
+            {assignMode === 'persons' ? (
+              <div className="max-h-48 overflow-y-auto border border-lc-border rounded-lg divide-y divide-lc-border/60">
+                {assignableProfiles.map((p) => (
+                  <label key={p.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-lc-hover cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="assigned_to"
+                      value={p.id}
+                      className="accent-lc-navy"
+                    />
+                    <span className="text-[13px] text-lc-ink">
+                      {p.full_name}
+                      <span className="text-[11px] text-lc-faint ml-1">
+                        ({p.role ? ROLE_LABELS[p.role] : '?'}{p.team ? ` · ${TEAM_LABELS[p.team]}` : ''})
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <select
+                name="assigned_group"
+                className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
+              >
+                <option value="">— Gruppe wählen —</option>
+                {availableGroups.map((g) => (
+                  <option key={g} value={g}>{GROUP_LABELS[g]}</option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
         {error && (
           <p className="text-[12px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
             {error}
@@ -575,7 +584,7 @@ export function TasksView({ tasks, profiles, currentProfile }: Props) {
   const [deleteTask_, setDeleteTask] = useState<Task | null>(null)
   const [reassignTask_, setReassignTask] = useState<Task | null>(null)
 
-  const canCreate = currentProfile.role === 'chair' || currentProfile.role === 'head'
+  const canCreate = true
   const isChair = currentProfile.role === 'chair'
 
   const filtered = tasks.filter((t) => {
@@ -925,6 +934,8 @@ function TaskCard({
   onReassign: () => void
 }) {
   const [isPending, startTransition] = useTransition()
+  const [descExpanded, setDescExpanded] = useState(false)
+  const [proofExpanded, setProofExpanded] = useState(false)
 
   const isChair = currentProfile.role === 'chair'
   const isAssignedToMe =
@@ -954,16 +965,43 @@ function TaskCard({
     })
   }
 
+  const descLong = (task.description?.length ?? 0) > 80
+  const proofLong = (task.proof_url?.length ?? 0) > 80
+
   return (
     <div className="bg-white border border-lc-border rounded-xl p-4 space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="font-medium text-lc-ink leading-snug">{task.title}</p>
           {task.description && (
-            <p className="text-[11px] text-lc-faint mt-0.5 line-clamp-2">{task.description}</p>
+            <div className="mt-0.5">
+              <p className={`text-[11px] text-lc-faint ${descExpanded ? '' : 'line-clamp-2'}`}>
+                {task.description}
+              </p>
+              {descLong && (
+                <button
+                  onClick={() => setDescExpanded((v) => !v)}
+                  className="flex items-center gap-0.5 text-[11px] text-lc-blue mt-0.5"
+                >
+                  {descExpanded ? <><ChevronUp size={11} /> Weniger</> : <><ChevronDown size={11} /> Mehr</>}
+                </button>
+              )}
+            </div>
           )}
           {task.proof_url && (
-            <p className="text-[11px] text-lc-faint italic mt-0.5 line-clamp-2">✓ {task.proof_url}</p>
+            <div className="mt-0.5">
+              <p className={`text-[11px] text-lc-faint italic ${proofExpanded ? '' : 'line-clamp-2'}`}>
+                ✓ {task.proof_url}
+              </p>
+              {proofLong && (
+                <button
+                  onClick={() => setProofExpanded((v) => !v)}
+                  className="flex items-center gap-0.5 text-[11px] text-lc-blue mt-0.5"
+                >
+                  {proofExpanded ? <><ChevronUp size={11} /> Weniger</> : <><ChevronDown size={11} /> Mehr</>}
+                </button>
+              )}
+            </div>
           )}
         </div>
         <StatusBadge task={task} />

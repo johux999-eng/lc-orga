@@ -66,32 +66,43 @@ export async function createTask(formData: FormData) {
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['head', 'chair'].includes(profile.role)) {
-    throw new Error('Nur Heads und Chairs können Tasks erstellen')
+  if (!profile || !['head', 'chair', 'member'].includes(profile.role)) {
+    throw new Error('Nicht berechtigt')
   }
 
   const title = (formData.get('title') as string).trim()
   const description = (formData.get('description') as string | null)?.trim() || null
-  const team = formData.get('team') as Team
   const deadline = (formData.get('deadline') as string | null) || null
-  const assign_mode = (formData.get('assign_mode') as string) || 'persons'
 
-  if (!title || !team || !deadline) {
-    throw new Error('Titel, Team und Deadline sind erforderlich')
+  if (!title || !deadline) {
+    throw new Error('Titel und Deadline sind erforderlich')
   }
 
   let assigned_to: string | null = null
   let co_assignees: string[] = []
   let assigned_group: string | null = null
+  let team: Team
 
-  if (assign_mode === 'group') {
-    assigned_group = (formData.get('assigned_group') as string | null)?.trim() || null
-    if (!assigned_group) throw new Error('Gruppe ist erforderlich')
+  if (profile.role === 'member') {
+    // Members can only create self-assigned tasks for their own team
+    if (!profile.team) throw new Error('Kein Team zugewiesen')
+    team = profile.team as Team
+    assigned_to = user.id
   } else {
-    const assignees = (formData.getAll('assigned_to') as string[]).filter(Boolean)
-    if (!assignees.length) throw new Error('Zuweisung ist erforderlich')
-    assigned_to = assignees[0]
-    co_assignees = assignees.slice(1)
+    // head or chair
+    team = formData.get('team') as Team
+    if (!team) throw new Error('Team ist erforderlich')
+
+    const assign_mode = (formData.get('assign_mode') as string) || 'persons'
+    if (assign_mode === 'group') {
+      assigned_group = (formData.get('assigned_group') as string | null)?.trim() || null
+      if (!assigned_group) throw new Error('Gruppe ist erforderlich')
+    } else {
+      const assignees = (formData.getAll('assigned_to') as string[]).filter(Boolean)
+      if (!assignees.length) throw new Error('Zuweisung ist erforderlich')
+      assigned_to = assignees[0]
+      co_assignees = assignees.slice(1)
+    }
   }
 
   const { error } = await supabase.from('tasks').insert({
@@ -109,6 +120,7 @@ export async function createTask(formData: FormData) {
 
   revalidatePath('/')
   revalidatePath('/tasks')
+  revalidatePath('/me')
 }
 
 export async function submitTask(taskId: string, proofUrl?: string) {

@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev      # Start dev server
 npm run build    # Production build
-npm run lint     # ESLint
+npm run lint     # ESLint (first run prompts for config — not yet set up)
 npx tsc --noEmit # Type-check without emitting
 ```
 
@@ -47,7 +47,17 @@ Two core tables in Supabase:
 
 Task assignment is either to individual person(s) (`assigned_to` + `co_assignees`) or to a named group (`assigned_group`). The 13 group identifiers are defined in `lib/utils.ts` (`ASSIGNEE_GROUPS`, `GROUP_CRITERIA`). `isProfileInGroup()` is the single source of truth for group membership. `GROUP_CRITERIA` is not exported — never bypass `isProfileInGroup`.
 
-Only `head` and `chair` roles can create tasks (enforced in both `createTask` action and `TasksView` UI).
+### Task Creation Rules
+
+All three roles can create tasks, with different constraints:
+
+| Role | Can create | Team | Assignment |
+|------|-----------|------|------------|
+| **chair** | any task | any team | any person or any group |
+| **head** | any task | any team (defaults to own) | any person or any group from: all `members_*` groups + own specific `heads_*` group |
+| **member** | self-assigned tasks only | forced to own team | always `assigned_to = self`, no group |
+
+Members' self-assigned tasks behave like regular tasks: submit → `pending_review` → head approves → `done`.
 
 ### Task Status Flow
 
@@ -56,9 +66,12 @@ open → (assignee submits) → pending_review → (head/chair approves) → don
                                            → (head/chair rejects)  → open
 ```
 
-- **Members** submit → status becomes `pending_review`; `submitted_by` is set to their user id
-- **Heads** submit their own tasks → `pending_review` (chair must approve)
-- **Chairs** submit → status becomes `done` directly
+- **Members** submit → `pending_review`; only the head of their team can approve
+- **Heads** submit → `pending_review`; only chairs can approve (heads cannot approve head-submitted tasks)
+- **Chairs** submit → `done` directly (auto-approved)
+- **Head group tasks** (`assigned_group = heads_*`) — when submitted by any head in the group → `pending_review`; only chairs can approve (heads are blocked from approving `heads_*` group tasks by the action validation)
+
+The approval gating logic lives in `approveTask` in `lib/actions.ts`: heads may only approve tasks where `assignee.role === 'member' && assignee.team === approver.team`. This naturally prevents heads from approving head-group tasks or cross-team tasks.
 
 ### Group Task Visibility
 
@@ -76,14 +89,14 @@ The underlying RLS SELECT policy is intentionally permissive for group members (
 | Who | Sees in /tasks | Sees in /review |
 |-----|---------------|-----------------|
 | member | own tasks only (assigned_to / co_assignees / group, filtered by `isTaskVisibleForProfile`) | — |
-| head | all tasks for their team | member tasks of their team (direct + group) |
+| head | all tasks for their team **+ all tasks they personally created** (any team) | member tasks of their team (direct + group) |
 | chair | all tasks | all pending_review tasks |
 
-The server-side queries in `app/(app)/tasks/page.tsx` and `app/(app)/me/page.tsx` build the appropriate `.eq()` / `.or()` filters per role **on top of** RLS — both layers must allow access.
+The server-side queries apply per-role filters **on top of** RLS — both layers must allow access. The head query uses `.or('team.eq.X,created_by.eq.Y')` to cover cross-team tasks they created.
 
 ### Required Supabase RLS Policies
 
-The `tasks` SELECT policy must include these clauses (otherwise heads lose visibility of tasks they create for members):
+The `tasks` **SELECT** policy must include these clauses:
 
 ```sql
 -- Direct/co assignment, group membership, creator, head team access, chair all-access
@@ -96,11 +109,13 @@ OR ((SELECT role FROM profiles WHERE id = auth.uid()) = 'head'
 OR (SELECT role FROM profiles WHERE id = auth.uid()) = 'chair'
 ```
 
+The `tasks` **INSERT** policy must allow all three roles (`member`, `head`, `chair`) — application-level checks in `createTask` enforce the per-role constraints.
+
 A `public.is_in_group(group_name text)` SECURITY DEFINER function is needed for the group clause — it maps each group identifier to `(role, team)` criteria against `auth.uid()`.
 
 ### Design System
 
-Light-mode, law-congress aesthetic. Never revert to dark Tailwind slate classes.
+Light-mode, law-congress aesthetic. Never use dark Tailwind slate classes.
 
 **Tailwind tokens** (`lc-*` — defined in `tailwind.config.ts`):
 | Token | Hex | Usage |
@@ -132,6 +147,7 @@ Light-mode, law-congress aesthetic. Never revert to dark Tailwind slate classes.
 - Secondary button: `text-lc-muted border border-lc-border hover:bg-lc-hover`
 - Modal backdrop: `bg-lc-ink/40 backdrop-blur-sm`; modal shell: `bg-white border border-lc-border` — use the `ModalShell` component inside `TasksView.tsx` as the pattern
 - Sidebar: navy (`bg-lc-navy`), nav active state `bg-white/12`, inactive `text-white/55 hover:bg-white/8`
+- Mobile task cards use `line-clamp-2` for description/proof_url with a `ChevronDown`/`ChevronUp` expand toggle shown when text exceeds ~80 characters
 
 ### Key Files
 
@@ -139,7 +155,7 @@ Light-mode, law-congress aesthetic. Never revert to dark Tailwind slate classes.
 - `lib/utils.ts` — group definitions, `isProfileInGroup`, `isTaskVisibleForProfile`, `computeStats`, formatting helpers
 - `lib/auth.ts` — `getAuthUser` / `getCurrentProfile` with React.cache deduplication
 - `lib/actions.ts` — all Server Actions (auth, CRUD for tasks, approval/rejection, user management)
-- `components/TasksView.tsx` — full tasks UI including Create/Edit/Delete/Reassign/Submit modals and inline approve/reject buttons
+- `components/TasksView.tsx` — full tasks UI including Create/Edit/Delete/Reassign/Submit modals and inline approve/reject buttons; `ModalShell` is the shared modal wrapper pattern
 - `components/ReviewView.tsx` — review queue UI (head sees member tasks; chair sees all pending)
 - `components/DashboardTable.tsx` — per-member stats table used on the dashboard
 - `app/(app)/review/page.tsx` — server-side filtering of pending tasks per role before passing to ReviewView

@@ -37,7 +37,8 @@ export default async function TasksPage() {
     ]
     tasksQuery = tasksQuery.or(orParts.join(','))
   } else if (currentProfile.role === 'head') {
-    tasksQuery = tasksQuery.eq('team', currentProfile.team)
+    // Own team tasks + tasks created by this head for other teams
+    tasksQuery = tasksQuery.or(`team.eq.${currentProfile.team},created_by.eq.${user.id}`)
   }
 
   const [tasksResult, profilesResult] = await Promise.all([
