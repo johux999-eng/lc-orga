@@ -39,7 +39,9 @@ export async function completeOnboarding(formData: FormData) {
   const team = formData.get('team') as Team
 
   if (!full_name || !role || !team) throw new Error('Name, Rolle und Team sind erforderlich')
-  if (role === 'chair') throw new Error('Ungültige Rolle')
+  if (!(['head', 'member'] as const).includes(role as 'head' | 'member')) throw new Error('Ungültige Rolle')
+  const VALID_TEAMS = ['Sponsoring', 'Speaker', 'Public Relations', 'Technik/Mobility', 'Event', 'Chairs'] as const
+  if (!(VALID_TEAMS as readonly string[]).includes(team)) throw new Error('Ungültiges Team')
 
   const { error } = await supabase.from('profiles').upsert({
     id: user.id,
@@ -171,6 +173,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
       ...(newStatus === 'done' ? { reviewed_by: user.id, completed_at: now } : {}),
     })
     .eq('id', taskId)
+    .eq('status', 'open')
 
   if (error) throw new Error(error.message)
 
@@ -231,6 +234,7 @@ export async function approveTask(taskId: string) {
       status: 'done',
       reviewed_by: user.id,
       completed_at: new Date().toISOString(),
+      rejection_reason: null,
     })
     .eq('id', taskId)
 
@@ -276,6 +280,8 @@ export async function rejectTask(taskId: string, reason?: string) {
       if (!isProfileInGroup(task.assigned_group, { role: 'member', team: approver.team })) {
         throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
       }
+    } else {
+      throw new Error('Kein Assignee gefunden')
     }
   }
 
