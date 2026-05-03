@@ -42,6 +42,7 @@ export async function completeOnboarding(formData: FormData) {
   if (!(['head', 'member'] as const).includes(role as 'head' | 'member')) throw new Error('Ungültige Rolle')
   const VALID_TEAMS = ['Sponsoring', 'Speaker', 'Public Relations', 'Technik/Mobility', 'Event', 'Chairs'] as const
   if (!(VALID_TEAMS as readonly string[]).includes(team)) throw new Error('Ungültiges Team')
+  if (team === 'Chairs') throw new Error('Ungültiges Team')
 
   const { error } = await supabase.from('profiles').upsert({
     id: user.id,
@@ -237,6 +238,7 @@ export async function approveTask(taskId: string) {
       rejection_reason: null,
     })
     .eq('id', taskId)
+    .eq('status', 'pending_review')
 
   if (error) throw new Error(error.message)
 
@@ -245,7 +247,10 @@ export async function approveTask(taskId: string) {
   revalidatePath('/')
 }
 
+const REJECTION_REASON_MAX = 500
+
 export async function rejectTask(taskId: string, reason?: string) {
+  if (reason && reason.length > REJECTION_REASON_MAX) throw new Error(`Begründung darf maximal ${REJECTION_REASON_MAX} Zeichen lang sein`)
   const supabase = await createClient()
   const {
     data: { user },

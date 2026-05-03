@@ -32,7 +32,7 @@ function RejectModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-lc-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-lc-ink/40 backdrop-blur-sm" onClick={isPending ? undefined : onClose} />
       <div className="relative w-full sm:max-w-md bg-lc-surface rounded-t-2xl sm:rounded-2xl border border-lc-border shadow-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-lc-border">
           <h2 className="text-[15px] font-semibold text-lc-ink">Task zurückweisen</h2>
@@ -54,6 +54,7 @@ function RejectModal({
               onChange={(e) => setReason(e.target.value)}
               placeholder="z.B. Nachweis fehlt, bitte nochmals einreichen…"
               rows={3}
+              maxLength={500}
               className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors resize-none"
             />
           </div>
