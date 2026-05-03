@@ -333,6 +333,7 @@ export async function approveUser(userId: string) {
   revalidatePath('/')
   revalidatePath('/tasks')
   revalidatePath('/me')
+  revalidatePath('/review')
 }
 
 // ── Chair-only task management ────────────────────────────────────────────────
