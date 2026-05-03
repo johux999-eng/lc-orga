@@ -33,10 +33,14 @@ export default async function DashboardPage() {
 
   const stats = computeStats(allProfiles, allTasks)
 
-  const totalOpen = allTasks.filter((t) => t.status === 'open').length
-  const totalPending = allTasks.filter((t) => t.status === 'pending_review').length
-  const totalDone = allTasks.filter((t) => t.status === 'done').length
-  const totalAll = allTasks.length
+  const approvedIds = new Set(allProfiles.map((p) => p.id))
+  const countableTasks = allTasks.filter(
+    (t) => t.assigned_group || !t.assigned_to || approvedIds.has(t.assigned_to)
+  )
+  const totalOpen = countableTasks.filter((t) => t.status === 'open').length
+  const totalPending = countableTasks.filter((t) => t.status === 'pending_review').length
+  const totalDone = countableTasks.filter((t) => t.status === 'done').length
+  const totalAll = countableTasks.length
   const globalRate = totalAll > 0 ? Math.round((totalDone / totalAll) * 100) : 0
 
   return (

@@ -163,7 +163,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
   const newStatus = assigneeRole === 'chair' ? 'done' : 'pending_review'
   const now = new Date().toISOString()
 
-  const { error } = await supabase
+  const { error, data: updated } = await supabase
     .from('tasks')
     .update({
       status: newStatus,
@@ -175,8 +175,10 @@ export async function submitTask(taskId: string, proofUrl?: string) {
     })
     .eq('id', taskId)
     .eq('status', 'open')
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!updated || updated.length === 0) throw new Error('Task wurde bereits eingereicht oder geändert')
 
   revalidatePath('/tasks')
   revalidatePath('/me')
@@ -220,6 +222,9 @@ export async function approveTask(taskId: string) {
         throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
       }
     } else if (task.assigned_group) {
+      if (task.assigned_group === 'all' || task.assigned_group === 'members_all') {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
+      }
       if (!isProfileInGroup(task.assigned_group, { role: 'member', team: approver.team })) {
         throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
       }
@@ -229,7 +234,7 @@ export async function approveTask(taskId: string) {
   }
   // Chair can approve any pending task — RLS handles visibility
 
-  const { error } = await supabase
+  const { error, data: approved } = await supabase
     .from('tasks')
     .update({
       status: 'done',
@@ -239,8 +244,10 @@ export async function approveTask(taskId: string) {
     })
     .eq('id', taskId)
     .eq('status', 'pending_review')
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!approved || approved.length === 0) throw new Error('Task wurde bereits bearbeitet')
 
   revalidatePath('/review')
   revalidatePath('/tasks')
@@ -282,6 +289,9 @@ export async function rejectTask(taskId: string, reason?: string) {
         throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
       }
     } else if (task.assigned_group) {
+      if (task.assigned_group === 'all' || task.assigned_group === 'members_all') {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
+      }
       if (!isProfileInGroup(task.assigned_group, { role: 'member', team: approver.team })) {
         throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
       }
@@ -290,7 +300,7 @@ export async function rejectTask(taskId: string, reason?: string) {
     }
   }
 
-  const { error } = await supabase
+  const { error, data: rejected } = await supabase
     .from('tasks')
     .update({
       status: 'open',
@@ -301,8 +311,10 @@ export async function rejectTask(taskId: string, reason?: string) {
     })
     .eq('id', taskId)
     .eq('status', 'pending_review')
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!rejected || rejected.length === 0) throw new Error('Task wurde bereits bearbeitet')
 
   revalidatePath('/review')
   revalidatePath('/tasks')
