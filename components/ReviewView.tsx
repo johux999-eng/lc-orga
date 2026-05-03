@@ -16,12 +16,13 @@ function RejectModal({
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [reason, setReason] = useState('')
 
   function handleReject() {
     setError(null)
     startTransition(async () => {
       try {
-        await rejectTask(task.id)
+        await rejectTask(task.id, reason.trim() || undefined)
         onClose()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Fehler beim Zurückweisen')
@@ -31,7 +32,7 @@ function RejectModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-lc-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-lc-ink/40 backdrop-blur-sm" onClick={isPending ? undefined : onClose} />
       <div className="relative w-full sm:max-w-md bg-lc-surface rounded-t-2xl sm:rounded-2xl border border-lc-border shadow-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-lc-border">
           <h2 className="text-[15px] font-semibold text-lc-ink">Task zurückweisen</h2>
@@ -43,6 +44,19 @@ function RejectModal({
             <p className="text-[11px] text-lc-faint mt-0.5">
               {task.assigned_profile?.full_name} · {task.assigned_profile?.role ? ROLE_LABELS[task.assigned_profile.role] : ''}
             </p>
+          </div>
+          <div>
+            <label className="text-[11px] font-medium text-lc-muted uppercase tracking-wide mb-1.5 block">
+              Begründung (optional)
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="z.B. Nachweis fehlt, bitte nochmals einreichen…"
+              rows={3}
+              maxLength={500}
+              className="w-full px-3 py-2 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink placeholder-lc-faint focus:outline-none focus:border-lc-blue transition-colors resize-none"
+            />
           </div>
           {error && (
             <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">

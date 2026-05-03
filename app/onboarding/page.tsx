@@ -62,8 +62,8 @@ export default function OnboardingPage() {
                 <Briefcase size={11} />
                 Rolle *
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {ROLES.map((r) => (
+              <div className="grid grid-cols-2 gap-2">
+                {ROLES.filter((r) => r !== 'chair').map((r) => (
                   <label
                     key={r}
                     className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border cursor-pointer transition-all ${
@@ -83,39 +83,35 @@ export default function OnboardingPage() {
                     />
                     <span className="text-[13px] font-semibold">{ROLE_LABELS[r]}</span>
                     <span className="text-[10px] text-center leading-tight opacity-70">
-                      {r === 'chair' ? 'Gesamtleitung' : r === 'head' ? 'Teamleitung' : 'Organisator'}
+                      {r === 'head' ? 'Teamleitung' : 'Organisator'}
                     </span>
                   </label>
                 ))}
               </div>
             </div>
 
-            {/* Team — hidden for chair */}
-            {role === 'chair' ? (
-              <input type="hidden" name="team" value="Chairs" />
-            ) : (
-              <div>
-                <label className="flex items-center gap-1.5 text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">
-                  <Users size={11} />
-                  Team *
-                </label>
-                <select
-                  name="team"
-                  required
-                  defaultValue=""
-                  className="w-full px-3 py-2.5 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
-                >
-                  <option value="" disabled>
-                    — Team auswählen —
+            {/* Team */}
+            <div>
+              <label className="flex items-center gap-1.5 text-[11px] font-medium text-lc-muted mb-1.5 uppercase tracking-wide">
+                <Users size={11} />
+                Team *
+              </label>
+              <select
+                name="team"
+                required
+                defaultValue=""
+                className="w-full px-3 py-2.5 bg-lc-cream border border-lc-border-strong rounded-lg text-[13px] text-lc-ink focus:outline-none focus:border-lc-blue transition-colors"
+              >
+                <option value="" disabled>
+                  — Team auswählen —
+                </option>
+                {TEAMS.map((t) => (
+                  <option key={t} value={t}>
+                    {TEAM_LABELS[t]}
                   </option>
-                  {TEAMS.map((t) => (
-                    <option key={t} value={t}>
-                      {TEAM_LABELS[t]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+                ))}
+              </select>
+            </div>
 
             {error && (
               <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">

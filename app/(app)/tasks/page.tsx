@@ -46,6 +46,7 @@ export default async function TasksPage() {
     supabase
       .from('profiles')
       .select('id, full_name, role, team, created_at')
+      .eq('approved', true)
       .order('full_name'),
   ])
 

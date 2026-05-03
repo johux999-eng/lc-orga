@@ -39,6 +39,10 @@ export async function completeOnboarding(formData: FormData) {
   const team = formData.get('team') as Team
 
   if (!full_name || !role || !team) throw new Error('Name, Rolle und Team sind erforderlich')
+  if (!(['head', 'member'] as const).includes(role as 'head' | 'member')) throw new Error('Ungültige Rolle')
+  const VALID_TEAMS = ['Sponsoring', 'Speaker', 'Public Relations', 'Technik/Mobility', 'Event', 'Chairs'] as const
+  if (!(VALID_TEAMS as readonly string[]).includes(team)) throw new Error('Ungültiges Team')
+  if (team === 'Chairs') throw new Error('Ungültiges Team')
 
   const { error } = await supabase.from('profiles').upsert({
     id: user.id,
@@ -133,7 +137,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
   const [{ data: task }, { data: submitterProfile }] = await Promise.all([
     supabase
       .from('tasks')
-      .select('assigned_to, co_assignees, assigned_group')
+      .select('assigned_to, co_assignees, assigned_group, status')
       .eq('id', taskId)
       .single(),
     supabase
@@ -145,6 +149,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
 
   if (!task) throw new Error('Task nicht gefunden')
   if (!submitterProfile) throw new Error('Profil nicht gefunden')
+  if (task.status !== 'open') throw new Error('Task wurde bereits eingereicht')
 
   const coAssignees = (task.co_assignees as string[]) ?? []
   const isAssigned =
@@ -158,18 +163,22 @@ export async function submitTask(taskId: string, proofUrl?: string) {
   const newStatus = assigneeRole === 'chair' ? 'done' : 'pending_review'
   const now = new Date().toISOString()
 
-  const { error } = await supabase
+  const { error, data: updated } = await supabase
     .from('tasks')
     .update({
       status: newStatus,
       proof_url: proofUrl || null,
+      rejection_reason: null,
       submitted_at: now,
       submitted_by: user.id,
       ...(newStatus === 'done' ? { reviewed_by: user.id, completed_at: now } : {}),
     })
     .eq('id', taskId)
+    .eq('status', 'open')
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!updated || updated.length === 0) throw new Error('Task wurde bereits eingereicht oder geändert')
 
   revalidatePath('/tasks')
   revalidatePath('/me')
@@ -213,6 +222,9 @@ export async function approveTask(taskId: string) {
         throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
       }
     } else if (task.assigned_group) {
+      if (task.assigned_group === 'all' || task.assigned_group === 'members_all') {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
+      }
       if (!isProfileInGroup(task.assigned_group, { role: 'member', team: approver.team })) {
         throw new Error('Als Head kannst du nur Member-Tasks deines Teams genehmigen')
       }
@@ -222,23 +234,30 @@ export async function approveTask(taskId: string) {
   }
   // Chair can approve any pending task — RLS handles visibility
 
-  const { error } = await supabase
+  const { error, data: approved } = await supabase
     .from('tasks')
     .update({
       status: 'done',
       reviewed_by: user.id,
       completed_at: new Date().toISOString(),
+      rejection_reason: null,
     })
     .eq('id', taskId)
+    .eq('status', 'pending_review')
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!approved || approved.length === 0) throw new Error('Task wurde bereits bearbeitet')
 
   revalidatePath('/review')
   revalidatePath('/tasks')
   revalidatePath('/')
 }
 
-export async function rejectTask(taskId: string) {
+const REJECTION_REASON_MAX = 500
+
+export async function rejectTask(taskId: string, reason?: string) {
+  if (reason && reason.length > REJECTION_REASON_MAX) throw new Error(`Begründung darf maximal ${REJECTION_REASON_MAX} Zeichen lang sein`)
   const supabase = await createClient()
   const {
     data: { user },
@@ -255,17 +274,52 @@ export async function rejectTask(taskId: string) {
     throw new Error('Nicht berechtigt')
   }
 
-  const { error } = await supabase
+  // Head darf nur Member-Tasks des eigenen Teams ablehnen
+  if (approver.role === 'head') {
+    const { data: task } = await supabase
+      .from('tasks')
+      .select('assigned_group, assigned_profile:profiles!assigned_to(role, team)')
+      .eq('id', taskId)
+      .eq('status', 'pending_review')
+      .single()
+    if (!task) throw new Error('Task nicht gefunden')
+    const assignee = task.assigned_profile as unknown as { role: string; team: string } | null
+    if (assignee) {
+      if (assignee.role !== 'member' || assignee.team !== approver.team) {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
+      }
+    } else if (task.assigned_group) {
+      if (task.assigned_group === 'all' || task.assigned_group === 'members_all') {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
+      }
+      if (!isProfileInGroup(task.assigned_group, { role: 'member', team: approver.team })) {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
+      }
+    } else {
+      throw new Error('Kein Assignee gefunden')
+    }
+  }
+
+  const { error, data: rejected } = await supabase
     .from('tasks')
-    .update({ status: 'open' })
+    .update({
+      status: 'open',
+      rejection_reason: reason ?? null,
+      proof_url: null,
+      submitted_at: null,
+      submitted_by: null,
+    })
     .eq('id', taskId)
     .eq('status', 'pending_review')
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!rejected || rejected.length === 0) throw new Error('Task wurde bereits bearbeitet')
 
   revalidatePath('/review')
   revalidatePath('/tasks')
   revalidatePath('/')
+  revalidatePath('/me')
 }
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
@@ -293,6 +347,10 @@ export async function approveUser(userId: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath('/admin')
+  revalidatePath('/')
+  revalidatePath('/tasks')
+  revalidatePath('/me')
+  revalidatePath('/review')
 }
 
 // ── Chair-only task management ────────────────────────────────────────────────
