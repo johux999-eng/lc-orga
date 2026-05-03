@@ -21,6 +21,7 @@ export default async function DashboardPage() {
     supabase
       .from('profiles')
       .select('id, full_name, team, role, created_at')
+      .eq('approved', true)
       .order('full_name'),
     supabase
       .from('tasks')

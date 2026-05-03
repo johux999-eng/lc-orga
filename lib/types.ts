@@ -31,6 +31,7 @@ export interface Task {
   status: TaskStatus
   deadline: string | null
   proof_url: string | null
+  rejection_reason: string | null
   submitted_at: string | null
   submitted_by: string | null
   reviewed_by: string | null

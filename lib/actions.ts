@@ -39,6 +39,7 @@ export async function completeOnboarding(formData: FormData) {
   const team = formData.get('team') as Team
 
   if (!full_name || !role || !team) throw new Error('Name, Rolle und Team sind erforderlich')
+  if (role === 'chair') throw new Error('Ungültige Rolle')
 
   const { error } = await supabase.from('profiles').upsert({
     id: user.id,
@@ -133,7 +134,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
   const [{ data: task }, { data: submitterProfile }] = await Promise.all([
     supabase
       .from('tasks')
-      .select('assigned_to, co_assignees, assigned_group')
+      .select('assigned_to, co_assignees, assigned_group, status')
       .eq('id', taskId)
       .single(),
     supabase
@@ -145,6 +146,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
 
   if (!task) throw new Error('Task nicht gefunden')
   if (!submitterProfile) throw new Error('Profil nicht gefunden')
+  if (task.status !== 'open') throw new Error('Task wurde bereits eingereicht')
 
   const coAssignees = (task.co_assignees as string[]) ?? []
   const isAssigned =
@@ -163,6 +165,7 @@ export async function submitTask(taskId: string, proofUrl?: string) {
     .update({
       status: newStatus,
       proof_url: proofUrl || null,
+      rejection_reason: null,
       submitted_at: now,
       submitted_by: user.id,
       ...(newStatus === 'done' ? { reviewed_by: user.id, completed_at: now } : {}),
@@ -238,7 +241,7 @@ export async function approveTask(taskId: string) {
   revalidatePath('/')
 }
 
-export async function rejectTask(taskId: string) {
+export async function rejectTask(taskId: string, reason?: string) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -255,9 +258,36 @@ export async function rejectTask(taskId: string) {
     throw new Error('Nicht berechtigt')
   }
 
+  // Head darf nur Member-Tasks des eigenen Teams ablehnen
+  if (approver.role === 'head') {
+    const { data: task } = await supabase
+      .from('tasks')
+      .select('assigned_group, assigned_profile:profiles!assigned_to(role, team)')
+      .eq('id', taskId)
+      .eq('status', 'pending_review')
+      .single()
+    if (!task) throw new Error('Task nicht gefunden')
+    const assignee = task.assigned_profile as unknown as { role: string; team: string } | null
+    if (assignee) {
+      if (assignee.role !== 'member' || assignee.team !== approver.team) {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
+      }
+    } else if (task.assigned_group) {
+      if (!isProfileInGroup(task.assigned_group, { role: 'member', team: approver.team })) {
+        throw new Error('Als Head kannst du nur Member-Tasks deines Teams ablehnen')
+      }
+    }
+  }
+
   const { error } = await supabase
     .from('tasks')
-    .update({ status: 'open' })
+    .update({
+      status: 'open',
+      rejection_reason: reason ?? null,
+      proof_url: null,
+      submitted_at: null,
+      submitted_by: null,
+    })
     .eq('id', taskId)
     .eq('status', 'pending_review')
 
@@ -266,6 +296,7 @@ export async function rejectTask(taskId: string) {
   revalidatePath('/review')
   revalidatePath('/tasks')
   revalidatePath('/')
+  revalidatePath('/me')
 }
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
@@ -293,6 +324,9 @@ export async function approveUser(userId: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath('/admin')
+  revalidatePath('/')
+  revalidatePath('/tasks')
+  revalidatePath('/me')
 }
 
 // ── Chair-only task management ────────────────────────────────────────────────

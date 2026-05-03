@@ -862,6 +862,11 @@ function TaskTableRow({
           {task.proof_url && (
             <p className="text-[11px] text-lc-faint italic truncate max-w-xs mt-0.5">✓ {task.proof_url}</p>
           )}
+          {task.status === 'open' && task.rejection_reason && (
+            <p className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 rounded px-2 py-1 mt-1">
+              ↩ {task.rejection_reason}
+            </p>
+          )}
         </div>
       </td>
       <td className="px-4 py-3">
@@ -1030,6 +1035,11 @@ function TaskCard({
                 </button>
               )}
             </div>
+          )}
+          {task.status === 'open' && task.rejection_reason && (
+            <p className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 rounded px-2 py-1 mt-1">
+              ↩ {task.rejection_reason}
+            </p>
           )}
         </div>
         <StatusBadge task={task} />
